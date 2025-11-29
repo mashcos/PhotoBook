@@ -1,0 +1,25 @@
+<div class="map-container">
+  <h1 class="page-title">
+    <i class="pi pi-map"></i>
+    Photo Map
+  </h1>
+
+  <div class="map-wrapper">
+    <div
+      leaflet
+      [leafletOptions]="mapOptions"
+      [leafletLayers]="markers()"
+      class="leaflet-map"
+    ></div>
+  </div>
+
+  <div class="map-legend">
+    <div class="legend-item">
+      <i class="pi pi-map-marker" style="color: #2196f3;"></i>
+      <span>Photo Location</span>
+    </div>
+    <div class="legend-info">
+      Click on a marker to see photo details
+    </div>
+  </div>
+</div>

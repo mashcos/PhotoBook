@@ -1,0 +1,37 @@
+[
+  {
+    "id": "cat-landscape",
+    "label": "Landscape",
+    "icon": "pi pi-image",
+    "description": "Beautiful scenic landscapes from Germany",
+    "color": "#4CAF50"
+  },
+  {
+    "id": "cat-architecture",
+    "label": "Architecture",
+    "icon": "pi pi-building",
+    "description": "Historic and modern buildings",
+    "color": "#2196F3"
+  },
+  {
+    "id": "cat-nature",
+    "label": "Nature",
+    "icon": "pi pi-sun",
+    "description": "Flora and fauna of the region",
+    "color": "#8BC34A"
+  },
+  {
+    "id": "cat-events",
+    "label": "Events",
+    "icon": "pi pi-calendar",
+    "description": "Congress events and gatherings",
+    "color": "#FF9800"
+  },
+  {
+    "id": "cat-people",
+    "label": "People",
+    "icon": "pi pi-users",
+    "description": "Friends and colleagues",
+    "color": "#E91E63"
+  }
+]
