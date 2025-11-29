@@ -1,0 +1,92 @@
+<div class="home-container">
+  <!-- Hero Section with Transformation Effect -->
+  <section class="hero-section">
+    <div class="transformation-container" (click)="toggleTransformation()">
+      <div class="painting-layer" [class.hidden]="showReality()">
+        <div class="placeholder-art">
+          <i class="pi pi-palette"></i>
+          <span>Painting</span>
+        </div>
+      </div>
+      <div class="reality-layer" [class.visible]="showReality()">
+        <div class="placeholder-photo">
+          <i class="pi pi-camera"></i>
+          <span>Reality</span>
+        </div>
+      </div>
+      <div class="hint-text">Click to transform</div>
+    </div>
+
+    <div class="hero-content">
+      <h1 class="hero-title">Summer in Germany</h1>
+      <p class="hero-subtitle">
+        Your digital companion to explore memories from the international congress
+      </p>
+    </div>
+  </section>
+
+  <!-- Quick Navigation Cards -->
+  <section class="nav-cards">
+    <div class="grid">
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="nav-card">
+          <ng-template pTemplate="header">
+            <div class="card-icon">
+              <i class="pi pi-clock"></i>
+            </div>
+          </ng-template>
+          <h3>Timeline</h3>
+          <p>Browse photos chronologically</p>
+          <ng-template pTemplate="footer">
+            <p-button label="Explore" routerLink="/timeline" [outlined]="true" styleClass="w-full"></p-button>
+          </ng-template>
+        </p-card>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="nav-card">
+          <ng-template pTemplate="header">
+            <div class="card-icon">
+              <i class="pi pi-map"></i>
+            </div>
+          </ng-template>
+          <h3>Map</h3>
+          <p>Discover photo locations</p>
+          <ng-template pTemplate="footer">
+            <p-button label="Explore" routerLink="/map" [outlined]="true" styleClass="w-full"></p-button>
+          </ng-template>
+        </p-card>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="nav-card">
+          <ng-template pTemplate="header">
+            <div class="card-icon">
+              <i class="pi pi-tags"></i>
+            </div>
+          </ng-template>
+          <h3>Categories</h3>
+          <p>Browse by topic</p>
+          <ng-template pTemplate="footer">
+            <p-button label="Explore" routerLink="/category/cat-landscape" [outlined]="true" styleClass="w-full"></p-button>
+          </ng-template>
+        </p-card>
+      </div>
+
+      <div class="col-12 md:col-6 lg:col-3">
+        <p-card styleClass="nav-card">
+          <ng-template pTemplate="header">
+            <div class="card-icon">
+              <i class="pi pi-cog"></i>
+            </div>
+          </ng-template>
+          <h3>Admin</h3>
+          <p>Manage photo metadata</p>
+          <ng-template pTemplate="footer">
+            <p-button label="Manage" routerLink="/admin" [outlined]="true" styleClass="w-full"></p-button>
+          </ng-template>
+        </p-card>
+      </div>
+    </div>
+  </section>
+</div>

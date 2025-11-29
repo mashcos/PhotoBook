@@ -1,0 +1,132 @@
+<p-toast></p-toast>
+
+<div class="admin-container">
+  <h1 class="page-title">
+    <i class="pi pi-cog"></i>
+    Photo Admin
+  </h1>
+
+  <!-- Toolbar -->
+  <div class="admin-toolbar">
+    @if (isFileSystemSupported()) {
+      <p-button
+        label="Select Directory"
+        icon="pi pi-folder-open"
+        (onClick)="selectDirectory()"
+        [loading]="isLoading()"
+      ></p-button>
+      <p-button
+        label="Save to File"
+        icon="pi pi-save"
+        severity="success"
+        (onClick)="saveToFile()"
+        [loading]="isLoading()"
+      ></p-button>
+    } @else {
+      <div class="api-warning">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>File System Access API is not supported in this browser. Use Chrome or Edge for local file management.</span>
+      </div>
+    }
+  </div>
+
+  <!-- Photos Table -->
+  <p-table
+    [value]="editablePhotos()"
+    dataKey="id"
+    editMode="row"
+    [tableStyle]="{'min-width': '100%'}"
+    styleClass="p-datatable-sm"
+    [scrollable]="true"
+    scrollHeight="calc(100vh - 350px)"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 80px">Preview</th>
+        <th style="min-width: 150px" pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
+        <th style="min-width: 200px">Description</th>
+        <th style="width: 120px" pSortableColumn="date">Date <p-sortIcon field="date"></p-sortIcon></th>
+        <th style="min-width: 150px">Location</th>
+        <th style="width: 100px">Privacy</th>
+        <th style="width: 100px">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-photo let-editing="editing" let-ri="rowIndex">
+      <tr [pEditableRow]="photo">
+        <td>
+          <div class="preview-image">
+            <img [src]="photo.src" [alt]="photo.title" />
+          </div>
+        </td>
+        <td>
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="photo.title" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ photo.title }}
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        <td>
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="photo.description" style="width: 100%" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ photo.description }}
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        <td>
+          {{ photo.date | date:'shortDate' }}
+        </td>
+        <td>
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input pInputText type="text" [(ngModel)]="photo.location.name" />
+            </ng-template>
+            <ng-template pTemplate="output">
+              {{ photo.location.name || '-' }}
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        <td>
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-checkbox [(ngModel)]="photo.isPrivacyProtected" [binary]="true"></p-checkbox>
+            </ng-template>
+            <ng-template pTemplate="output">
+              @if (photo.isPrivacyProtected) {
+                <i class="pi pi-lock" style="color: #e65100;"></i>
+              } @else {
+                <i class="pi pi-lock-open" style="color: #4caf50;"></i>
+              }
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        <td>
+          <div class="action-buttons">
+            @if (!editing) {
+              <p-button icon="pi pi-pencil" pInitEditableRow (onClick)="onRowEditInit(photo)" [rounded]="true" [text]="true"></p-button>
+            }
+            @if (editing) {
+              <p-button icon="pi pi-check" pSaveEditableRow (onClick)="onRowEditSave(photo)" [rounded]="true" [text]="true" severity="success"></p-button>
+              <p-button icon="pi pi-times" pCancelEditableRow (onClick)="onRowEditCancel(photo, ri)" [rounded]="true" [text]="true" severity="danger"></p-button>
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center p-4">
+          <div class="empty-state">
+            <i class="pi pi-images"></i>
+            <p>No photos loaded. Select a directory or load from server.</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

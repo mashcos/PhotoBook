@@ -1,0 +1,148 @@
+.home-container {
+  min-height: 100%;
+}
+
+.hero-section {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #fff7e6 0%, #fff3cd 100%);
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.transformation-container {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  margin: 0 auto 1.5rem;
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  .painting-layer,
+  .reality-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .painting-layer {
+    background: linear-gradient(135deg, #ffb74d, #ff9800);
+    opacity: 1;
+
+    &.hidden {
+      opacity: 0;
+      transform: scale(1.1);
+    }
+  }
+
+  .reality-layer {
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    opacity: 0;
+    transform: scale(0.9);
+
+    &.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .placeholder-art,
+  .placeholder-photo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+
+    i {
+      font-size: 3rem;
+    }
+  }
+
+  .hint-text {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+  }
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #e65100;
+  margin: 0 0 0.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: #5d4037;
+  margin: 0;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.nav-cards {
+  padding: 0 1rem;
+
+  :host ::ng-deep .nav-card {
+    text-align: center;
+    height: 100%;
+
+    .p-card-body {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .p-card-content {
+      flex: 1;
+    }
+  }
+
+  .card-icon {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #ffb74d, #ff9800);
+    display: flex;
+    justify-content: center;
+
+    i {
+      font-size: 2.5rem;
+      color: white;
+    }
+  }
+
+  h3 {
+    margin: 0 0 0.5rem;
+    color: #e65100;
+  }
+
+  p {
+    margin: 0;
+    color: #757575;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .transformation-container {
+    width: 250px;
+    height: 167px;
+  }
+}
