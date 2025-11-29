@@ -106,10 +106,25 @@ export class LocalFileSystemService implements DataProvider {
   }
 
   /**
+   * Generate a unique ID for a photo
+   */
+  private generateUniqueId(): string {
+    // Use crypto.randomUUID if available, otherwise fallback to timestamp + random
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return `photo-${crypto.randomUUID()}`;
+    }
+    // Fallback with more entropy
+    const timestamp = Date.now().toString(36);
+    const random1 = Math.random().toString(36).substring(2, 11);
+    const random2 = Math.random().toString(36).substring(2, 11);
+    return `photo-${timestamp}-${random1}${random2}`;
+  }
+
+  /**
    * Create a Photo object from a File, extracting EXIF data
    */
   private async createPhotoFromFile(file: File): Promise<Photo> {
-    const id = `photo-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const id = this.generateUniqueId();
     const src = URL.createObjectURL(file);
     const exifData = await this.extractExifData(file);
 

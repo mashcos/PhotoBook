@@ -96,11 +96,16 @@ export class Admin {
     });
   }
 
-  onRowEditInit(_photo: Photo): void {
-    // Can be used to store original state for cancel
+  private originalPhotos = new Map<string, Photo>();
+
+  onRowEditInit(photo: Photo): void {
+    // Store original state for cancel functionality
+    this.originalPhotos.set(photo.id, { ...photo, location: { ...photo.location } });
   }
 
-  onRowEditSave(_photo: Photo): void {
+  onRowEditSave(photo: Photo): void {
+    // Clear stored original
+    this.originalPhotos.delete(photo.id);
     this.messageService.add({
       severity: 'success',
       summary: 'Updated',
@@ -108,8 +113,15 @@ export class Admin {
     });
   }
 
-  onRowEditCancel(_photo: Photo, _index: number): void {
-    // Restore from original if needed
+  onRowEditCancel(photo: Photo, index: number): void {
+    // Restore from original state
+    const original = this.originalPhotos.get(photo.id);
+    if (original) {
+      const photos = [...this.editablePhotos()];
+      photos[index] = original;
+      this.editablePhotos.set(photos);
+      this.originalPhotos.delete(photo.id);
+    }
   }
 
   getCategoryLabel(id: string): string {
