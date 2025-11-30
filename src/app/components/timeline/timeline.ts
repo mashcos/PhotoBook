@@ -7,6 +7,12 @@ import { ButtonModule } from 'primeng/button';
 import { PhotoService } from '../../services/photo.service';
 import { Photo } from '../../models/models';
 
+interface TimelineEvent {
+  date: string;
+  formattedDate: string;
+  photos: Photo[];
+}
+
 @Component({
   selector: 'app-timeline',
   imports: [RouterLink, TimelineModule, CardModule, ButtonModule],
@@ -20,17 +26,39 @@ export class Timeline {
     initialValue: [] as Photo[],
   });
 
-  protected readonly sortedPhotos = computed(() => {
-    return [...this.photos()].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+  protected readonly groupedPhotos = computed<TimelineEvent[]>(() => {
+    const photos = this.photos();
+    const groups = new Map<string, Photo[]>();
+
+    // Group by Year and Month
+    for (const photo of photos) {
+      const date = new Date(photo.date);
+      const dateKey = `${date.getFullYear()}-${date.getMonth()}`; // Key: "YYYY-MonthIndex"
+      
+      if (!groups.has(dateKey)) {
+        groups.set(dateKey, []);
+      }
+      groups.get(dateKey)!.push(photo);
+    }
+
+    // Convert Map to array and sort
+    return Array.from(groups.entries())
+      .map(([_, groupPhotos]) => {
+         // Use the date from the first photo as the representative date for sorting/formatting
+         const representativeDate = groupPhotos[0].date;
+         return {
+          date: representativeDate,
+          formattedDate: this.formatDate(representativeDate),
+          photos: groupPhotos
+        };
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
   protected formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+      month: 'long',
     });
   }
 }

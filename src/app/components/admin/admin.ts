@@ -8,7 +8,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { PhotoService } from '../../services/photo.service';
 import { LocalFileSystemService } from '../../services/local-file-system.service';
 import { Photo, Category } from '../../models/models';
 
@@ -20,8 +19,7 @@ import { Photo, Category } from '../../models/models';
   styleUrl: './admin.scss',
 })
 export class Admin {
-  private readonly photoService = inject(PhotoService);
-  private readonly localFileService = inject(LocalFileSystemService);
+  private readonly photoService = inject(LocalFileSystemService);
   private readonly messageService = inject(MessageService);
 
   protected readonly photos = toSignal(this.photoService.getPhotos(), {
@@ -33,7 +31,6 @@ export class Admin {
   });
 
   protected readonly editablePhotos = signal<Photo[]>([]);
-  protected readonly isFileSystemSupported = signal(this.localFileService.isSupported());
   protected readonly isLoading = signal(false);
 
   constructor() {
@@ -45,9 +42,9 @@ export class Admin {
 
   async selectDirectory(): Promise<void> {
     this.isLoading.set(true);
-    const success = await this.localFileService.selectDirectory();
+    const success = await this.photoService.selectDirectory();
     if (success) {
-      const photos = await this.localFileService.scanForImages();
+      const photos = await this.photoService.scanForImages();
       if (photos.length > 0) {
         this.editablePhotos.set(photos);
         this.messageService.add({
@@ -68,7 +65,7 @@ export class Admin {
 
   async saveToFile(): Promise<void> {
     this.isLoading.set(true);
-    this.localFileService.savePhotos(this.editablePhotos()).subscribe({
+    this.photoService.savePhotos(this.editablePhotos()).subscribe({
       next: (success) => {
         if (success) {
           this.messageService.add({
@@ -127,5 +124,9 @@ export class Admin {
   getCategoryLabel(id: string): string {
     const cat = this.categories().find((c) => c.id === id);
     return cat ? cat.label : id;
+  }
+  
+  isFileSystemSupported(): boolean {
+    return this.photoService.isSupported();
   }
 }

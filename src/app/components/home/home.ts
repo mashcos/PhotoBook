@@ -10,9 +10,4 @@ import { CardModule } from 'primeng/card';
   styleUrl: './home.scss',
 })
 export class Home {
-  protected readonly showReality = signal(false);
-
-  toggleTransformation(): void {
-    this.showReality.update((v) => !v);
-  }
 }

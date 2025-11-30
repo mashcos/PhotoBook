@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { LeafletModule } from '@asymmetrik/ngx-leaflet';
+import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import { latLng, tileLayer, MapOptions, marker, Marker, icon, Icon } from 'leaflet';
 import { PhotoService } from '../../services/photo.service';
 import { Photo } from '../../models/models';

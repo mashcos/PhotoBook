@@ -18,9 +18,9 @@
 
         <!-- Social Media Style Chips -->
         <div class="chip-container">
-          <p-chip [label]="formatDate(p.date)" icon="pi pi-calendar" styleClass="chip-date"></p-chip>
+          <p-chip [label]="formatDate(p.date)" icon="pi pi-calendar" class="chip-date"></p-chip>
           @if (p.location.name) {
-            <p-chip [label]="p.location.name" icon="pi pi-map-marker" styleClass="chip-location"></p-chip>
+            <p-chip [label]="p.location.name" icon="pi pi-map-marker" class="chip-location"></p-chip>
           }
           @for (cat of photoCategories(); track cat.id) {
             <p-chip [label]="cat.label" [icon]="cat.icon" [style]="{'background-color': cat.color, 'color': 'white'}"></p-chip>

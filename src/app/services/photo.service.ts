@@ -14,8 +14,8 @@ import { DataProvider } from './data-provider.interface';
 export class PhotoService implements DataProvider {
   private readonly http = inject(HttpClient);
 
-  private readonly photosUrl = 'assets/data/photos.json';
-  private readonly categoriesUrl = 'assets/data/categories.json';
+  private readonly photosUrl = 'assets/local/photos.json';
+  private readonly categoriesUrl = 'assets/local/categories.json';
 
   // Cache the observables for reuse
   private photos$?: Observable<Photo[]>;

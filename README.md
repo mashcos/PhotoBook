@@ -7,7 +7,7 @@ A digital companion webapp for a physical gift distributed at an international c
 - **Framework:** Angular 21 with standalone components
 - **UI Library:** PrimeNG 21 with the "Aura" theme (light mode)
 - **Styling:** PrimeFlex for layout utilities
-- **Maps:** Leaflet via `@asymmetrik/ngx-leaflet` (using OpenStreetMap)
+- **Maps:** Leaflet via `@bluehalo/ngx-leaflet` (using OpenStreetMap)
 - **Data Handling:** `exif-js` for extracting image metadata
 - **Icons:** PrimeIcons
 

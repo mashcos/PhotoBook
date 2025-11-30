@@ -125,7 +125,7 @@ export class LocalFileSystemService implements DataProvider {
    */
   private async createPhotoFromFile(file: File): Promise<Photo> {
     const id = this.generateUniqueId();
-    const src = URL.createObjectURL(file);
+    const src = "assets/local/" + file.name;
     const exifData = await this.extractExifData(file);
 
     return {
@@ -133,7 +133,7 @@ export class LocalFileSystemService implements DataProvider {
       src,
       title: file.name.replace(/\.[^/.]+$/, ''),
       description: '',
-      date: exifData.date || new Date(file.lastModified).toISOString(),
+      date: exifData.date || parseWhatsappDate(file.name) || new Date(file.lastModified).toISOString(),
       location: exifData.location || { name: '', lat: 0, lng: 0 },
       categoryIds: [],
       isPrivacyProtected: false,
@@ -346,3 +346,15 @@ export class LocalFileSystemService implements DataProvider {
     }
   }
 }
+
+function parseWhatsappDate(name: string): string | null {
+  if (name.match(/^IMG-\d{8}-WA\d+/)) {
+    const datePart = name.substring(4, 12);
+    const year = datePart.substring(0, 4);
+    const month = datePart.substring(4, 6);
+    const day = datePart.substring(6, 8);
+    return `${year}-${month}-${day}T00:00:00Z`;
+  }
+  return null;
+}
+

@@ -4,29 +4,32 @@
     Photo Timeline
   </h1>
 
-  <p-timeline [value]="sortedPhotos()" align="alternate" styleClass="photo-timeline">
-    <ng-template pTemplate="content" let-photo>
-      <p-card [header]="photo.title" [subheader]="formatDate(photo.date)" styleClass="timeline-card">
-        <div class="photo-preview" [routerLink]="['/hub', photo.id]">
-          <img [src]="photo.src" [alt]="photo.title" />
-          <div class="hover-overlay">
-            <i class="pi pi-eye"></i>
+  <p-timeline [value]="groupedPhotos()" align="alternate" class="photo-timeline">
+    <ng-template pTemplate="content" let-event>
+      <div class="block md:hidden mb-3 font-bold text-orange-500">{{ event.formattedDate }}</div>
+      @for (photo of event.photos; track photo.id) {
+        <p-card [header]="photo.title" class="timeline-card mb-4 block">
+          <div class="photo-preview" [routerLink]="['/hub', photo.id]">
+            <img [src]="photo.src" [alt]="photo.title" />
+            <div class="hover-overlay">
+              <i class="pi pi-eye"></i>
+            </div>
           </div>
-        </div>
-        <p class="photo-description">{{ photo.description }}</p>
-        @if (photo.location.name) {
-          <div class="location-info">
-            <i class="pi pi-map-marker"></i>
-            {{ photo.location.name }}
-          </div>
-        }
-        <ng-template pTemplate="footer">
-          <p-button label="View Details" [routerLink]="['/hub', photo.id]" [text]="true" icon="pi pi-arrow-right" iconPos="right"></p-button>
-        </ng-template>
-      </p-card>
+          <p class="photo-description">{{ photo.description }}</p>
+          @if (photo.location.name) {
+            <div class="location-info">
+              <i class="pi pi-map-marker"></i>
+              {{ photo.location.name }}
+            </div>
+          }
+          <ng-template pTemplate="footer">
+            <p-button label="View Details" [routerLink]="['/hub', photo.id]" [text]="true" icon="pi pi-arrow-right" iconPos="right"></p-button>
+          </ng-template>
+        </p-card>
+      }
     </ng-template>
-    <ng-template pTemplate="opposite" let-photo>
-      <span class="timeline-date">{{ formatDate(photo.date) }}</span>
+    <ng-template pTemplate="opposite" let-event>
+      <span class="timeline-date">{{ event.formattedDate }}</span>
     </ng-template>
   </p-timeline>
 </div>
