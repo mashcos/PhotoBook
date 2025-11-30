@@ -7,13 +7,31 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ToastModule } from 'primeng/toast';
+import { DatePickerModule } from 'primeng/datepicker';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TextareaModule } from 'primeng/textarea';
+import { RippleModule } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
 import { LocalFileSystemService } from '../../services/local-file-system.service';
 import { Photo, Category } from '../../models/models';
 
 @Component({
   selector: 'app-admin',
-  imports: [FormsModule, DatePipe, TableModule, ButtonModule, InputTextModule, CheckboxModule, ToastModule],
+  imports: [
+    FormsModule,
+    DatePipe,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    CheckboxModule,
+    ToastModule,
+    DatePickerModule,
+    MultiSelectModule,
+    InputNumberModule,
+    TextareaModule,
+    RippleModule,
+  ],
   providers: [MessageService],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
@@ -93,32 +111,69 @@ export class Admin {
     });
   }
 
-  private originalPhotos = new Map<string, Photo>();
+  clonedPhotos: { [s: string]: any } = {};
+  expandedRows: { [key: string]: boolean } = {};
 
-  onRowEditInit(photo: Photo): void {
-    // Store original state for cancel functionality
-    this.originalPhotos.set(photo.id, { ...photo, location: { ...photo.location } });
+  onRowExpand(event: any): void {
+    const photo = event.data as Photo;
+    this.clonedPhotos[photo.id] = {
+      ...photo,
+      location: { ...photo.location },
+      dateObj: new Date(photo.date),
+      categoryIds: [...photo.categoryIds],
+    };
+  }
+
+  onRowCollapse(event: any): void {
+    const photo = event.data as Photo;
+    delete this.clonedPhotos[photo.id];
   }
 
   onRowEditSave(photo: Photo): void {
-    // Clear stored original
-    this.originalPhotos.delete(photo.id);
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Updated',
-      detail: 'Photo metadata updated (save to file to persist)',
-    });
+    const clone = this.clonedPhotos[photo.id];
+    if (clone) {
+      const updatedPhoto: Photo = {
+        ...clone,
+        date: clone.dateObj ? clone.dateObj.toISOString() : clone.date,
+      };
+      // Remove auxiliary properties if any
+      delete (updatedPhoto as any).dateObj;
+
+      const photos = this.editablePhotos();
+      const index = photos.findIndex((p) => p.id === photo.id);
+      if (index !== -1) {
+        const newPhotos = [...photos];
+        newPhotos[index] = updatedPhoto;
+        this.editablePhotos.set(newPhotos);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Updated',
+          detail: 'Photo updated (save to file to persist)',
+        });
+      }
+    }
   }
 
-  onRowEditCancel(photo: Photo, index: number): void {
-    // Restore from original state
-    const original = this.originalPhotos.get(photo.id);
+  onRowEditCancel(photo: Photo): void {
+    const photos = this.editablePhotos();
+    const original = photos.find((p) => p.id === photo.id);
     if (original) {
-      const photos = [...this.editablePhotos()];
-      photos[index] = original;
-      this.editablePhotos.set(photos);
-      this.originalPhotos.delete(photo.id);
+      this.clonedPhotos[photo.id] = {
+        ...original,
+        location: { ...original.location },
+        dateObj: new Date(original.date),
+        categoryIds: [...original.categoryIds],
+      };
     }
+  }
+
+  openMapSelector(photo: Photo): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Not Implemented',
+      detail: 'Map selection will be implemented later',
+    });
   }
 
   getCategoryLabel(id: string): string {

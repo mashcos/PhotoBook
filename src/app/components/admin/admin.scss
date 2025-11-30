@@ -97,6 +97,19 @@
   .p-inputtext {
     width: 100%;
   }
+
+  .p-inputnumber {
+    width: 100%;
+  }
+
+  .p-inputnumber-input {
+    width: 100%;
+  }
+}
+
+.expanded-image {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
 }
 
 @media (max-width: 768px) {
