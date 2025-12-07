@@ -34,7 +34,6 @@
   <p-table
     #dt
     [value]="editablePhotos()"
-    [(expandedRowKeys)]="expandedRows"
     dataKey="id"
     [tableStyle]="{'min-width': '100%'}"
     class="p-datatable-sm"
@@ -42,8 +41,9 @@
     scrollHeight="calc(100vh - 350px)"
     (onRowExpand)="onRowExpand($event)"
     (onRowCollapse)="onRowCollapse($event)"
+    [expandedRowKeys]="expandedRows"
   >
-    <ng-template pTemplate="header">
+    <ng-template #header>
       <tr>
         <th style="width: 3rem"></th>
         <th style="width: 80px">Preview</th>
@@ -54,10 +54,10 @@
         <th style="width: 100px">Privacy</th>
       </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-photo let-expanded="expanded">
+    <ng-template #body let-photo let-expanded="expanded">
       <tr>
         <td>
-          <button type="button" pButton pRipple (click)="dt.toggleRow(photo)" class="p-button-text p-button-rounded p-button-plain" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></button>
+          <p-button type="button" pRipple [pRowToggler]="photo" class="p-button-text p-button-rounded p-button-plain" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></p-button>
         </td>
         <td>
           <div class="preview-image">
@@ -78,10 +78,11 @@
       </tr>
     </ng-template>
 
-    <ng-template pTemplate="rowexpansion" let-photo>
+    <ng-template #expandedrow let-photo>
       <tr>
         <td colspan="7" class="p-0">
-          <div *ngIf="clonedPhotos[photo.id] as editingPhoto" class="expanded-row-wrapper p-3 surface-ground">
+          @if (clonedPhotos[photo.id]; as editingPhoto) {
+          <div class="expanded-row-wrapper p-3 surface-ground">
             <div class="expanded-content flex flex-column md:flex-row gap-4">
               <!-- Large Image -->
               <div class="expanded-image-section md:w-6 w-full">
@@ -148,6 +149,7 @@
               </div>
             </div>
           </div>
+          }
         </td>
       </tr>
     </ng-template>

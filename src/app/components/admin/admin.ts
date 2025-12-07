@@ -51,6 +51,8 @@ export class Admin {
   protected readonly editablePhotos = signal<Photo[]>([]);
   protected readonly isLoading = signal(false);
 
+  expandedRows = {};
+
   constructor() {
     // Initialize editable photos when photos load
     this.photoService.getPhotos().subscribe((photos) => {
@@ -112,7 +114,6 @@ export class Admin {
   }
 
   clonedPhotos: { [s: string]: any } = {};
-  expandedRows: { [key: string]: boolean } = {};
 
   onRowExpand(event: any): void {
     const photo = event.data as Photo;
