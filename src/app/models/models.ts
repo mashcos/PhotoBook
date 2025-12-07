@@ -30,4 +30,5 @@ export interface Photo {
   location: LocationData;
   categoryIds: string[];
   isPrivacyProtected: boolean;
+  isReuseLocation: boolean;
 }

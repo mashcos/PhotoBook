@@ -151,11 +151,15 @@
 
                   <div class="field mb-3">
                     <label class="font-bold block mb-2 text-700">Location</label>
-                    <div class="p-inputgroup mb-2">
-                      <span class="p-inputgroup-addon"><i class="pi pi-map-marker"></i></span>
-                      <input pInputText placeholder="Location Name" [(ngModel)]="editingPhoto.location.name" />
-                    </div>
                     <div class="formgrid grid">
+                      <div class="field col-12 md:col-8 mb-2">
+                        <input pInputText placeholder="Location Name" [(ngModel)]="editingPhoto.location.name" />
+                      </div>
+                      <div class="field-checkbox col-12 md:col-4 mb-2">
+                        <p-checkbox [(ngModel)]="editingPhoto.isReuseLocation" [binary]="true"
+                          inputId="reuse"></p-checkbox>
+                        <label for="reuse" class="ml-2 text-700">Reuse Location</label>
+                      </div>
                       <div class="field col-12 md:col-4 mb-2">
                         <p-inputNumber [(ngModel)]="editingPhoto.location.lat" mode="decimal" [minFractionDigits]="6"
                           [maxFractionDigits]="6" placeholder="Latitude" styleClass="w-full" [style]="{'width': '100%'}"

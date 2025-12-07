@@ -153,6 +153,7 @@ export class LocalFileSystemService implements DataProvider {
       location: exifData.location || { name: '', lat: 0, lng: 0 },
       categoryIds: [],
       isPrivacyProtected: false,
+      isReuseLocation: false,
     };
   }
 
