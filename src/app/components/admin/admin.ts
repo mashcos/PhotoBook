@@ -88,7 +88,12 @@ export class Admin {
     this.isLoading.set(true);
     const success = await this.photoService.selectDirectory();
     if (success) {
+      // Load existing data first
+      await this.photoService.loadCategoriesFromDirectory();
+      await this.photoService.loadPhotosFromDirectory();
+
       const photos = await this.photoService.scanForImages();
+
       if (photos.length > 0) {
         this.editablePhotos.set(photos);
         this.messageService.add({

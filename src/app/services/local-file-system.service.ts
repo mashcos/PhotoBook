@@ -73,7 +73,7 @@ export class LocalFileSystemService implements DataProvider {
   }
 
   /**
-   * Scan the selected directory for images
+   * Scan the selected directory for images and merge with existing photos
    */
   async scanForImages(): Promise<Photo[]> {
     if (!this.directoryHandle) {
@@ -81,27 +81,43 @@ export class LocalFileSystemService implements DataProvider {
       return [];
     }
 
-    const photos: Photo[] = [];
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const existingPhotosMap = new Map(this.photos.map(p => {
+      // Create a key based on filename to identify duplicates
+      // We assume the src follows "assets/local/filename" pattern or similar,
+      // but strictly speaking distinct files in the same dir have distinct names.
+      const filename = p.src.split('/').pop() || '';
+      return [filename, p];
+    }));
+
+    const newPhotos: Photo[] = [];
 
     try {
       for await (const entry of this.directoryHandle.values()) {
         if (entry.kind === 'file') {
           const extension = entry.name.toLowerCase().slice(entry.name.lastIndexOf('.'));
           if (imageExtensions.includes(extension)) {
+            // Check if we already have this photo
+            if (existingPhotosMap.has(entry.name)) {
+              // We could update the 'src' here if we wanted to be sure,
+              // but mostly we just want to avoid re-creating it and losing metadata.
+              continue;
+            }
+
             const fileHandle = entry as unknown as FileSystemFileHandle;
             const file = await fileHandle.getFile();
             const photo = await this.createPhotoFromFile(file);
-            photos.push(photo);
+            newPhotos.push(photo);
           }
         }
       }
 
-      this.photos = photos;
-      return photos;
+      // Merge new photos into the existing list
+      this.photos = [...this.photos, ...newPhotos];
+      return this.photos;
     } catch (error) {
       console.error('Failed to scan directory:', error);
-      return [];
+      return this.photos;
     }
   }
 
