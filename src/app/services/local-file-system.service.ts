@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, of } from 'rxjs';
+import { Observable, BehaviorSubject, from, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Photo, Category, LocationData } from '../models/models';
 import { DataProvider } from './data-provider.interface';
@@ -44,8 +44,10 @@ declare global {
 })
 export class LocalFileSystemService implements DataProvider {
   private directoryHandle?: FileSystemDirectoryHandle;
-  private photos: Photo[] = [];
-  private categories: Category[] = [];
+
+  // Use BehaviorSubjects to hold state and emit updates
+  private photosSubject = new BehaviorSubject<Photo[]>([]);
+  private categoriesSubject = new BehaviorSubject<Category[]>([]);
 
   /**
    * Check if File System Access API is supported
@@ -82,10 +84,9 @@ export class LocalFileSystemService implements DataProvider {
     }
 
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    const existingPhotosMap = new Map(this.photos.map(p => {
+    const currentPhotos = this.photosSubject.value; // Get current value
+    const existingPhotosMap = new Map(currentPhotos.map(p => {
       // Create a key based on filename to identify duplicates
-      // We assume the src follows "assets/local/filename" pattern or similar,
-      // but strictly speaking distinct files in the same dir have distinct names.
       const filename = p.src.split('/').pop() || '';
       return [filename, p];
     }));
@@ -99,8 +100,6 @@ export class LocalFileSystemService implements DataProvider {
           if (imageExtensions.includes(extension)) {
             // Check if we already have this photo
             if (existingPhotosMap.has(entry.name)) {
-              // We could update the 'src' here if we wanted to be sure,
-              // but mostly we just want to avoid re-creating it and losing metadata.
               continue;
             }
 
@@ -112,12 +111,13 @@ export class LocalFileSystemService implements DataProvider {
         }
       }
 
-      // Merge new photos into the existing list
-      this.photos = [...this.photos, ...newPhotos];
-      return this.photos;
+      // Merge new photos into the existing list and emit
+      const updatedPhotos = [...currentPhotos, ...newPhotos];
+      this.photosSubject.next(updatedPhotos);
+      return updatedPhotos;
     } catch (error) {
       console.error('Failed to scan directory:', error);
-      return this.photos;
+      return currentPhotos;
     }
   }
 
@@ -252,28 +252,32 @@ export class LocalFileSystemService implements DataProvider {
    * Get all photos
    */
   getPhotos(): Observable<Photo[]> {
-    return of(this.photos);
+    return this.photosSubject.asObservable();
   }
 
   /**
    * Get all categories
    */
   getCategories(): Observable<Category[]> {
-    return of(this.categories);
+    return this.categoriesSubject.asObservable();
   }
 
   /**
    * Get a photo by ID
    */
   getPhotoById(id: string): Observable<Photo | undefined> {
-    return of(this.photos.find((p) => p.id === id));
+    return this.photosSubject.pipe(
+      map(photos => photos.find(p => p.id === id))
+    );
   }
 
   /**
    * Get photos by category
    */
   getPhotosByCategory(categoryId: string): Observable<Photo[]> {
-    return of(this.photos.filter((p) => p.categoryIds.includes(categoryId)));
+    return this.photosSubject.pipe(
+      map(photos => photos.filter(p => p.categoryIds.includes(categoryId)))
+    );
   }
 
   /**
@@ -286,7 +290,7 @@ export class LocalFileSystemService implements DataProvider {
 
     return from(this.saveJsonFile('photos.json', photos)).pipe(
       map(() => {
-        this.photos = photos;
+        this.photosSubject.next(photos);
         return true;
       }),
       catchError(() => of(false))
@@ -303,7 +307,7 @@ export class LocalFileSystemService implements DataProvider {
 
     return from(this.saveJsonFile('categories.json', categories)).pipe(
       map(() => {
-        this.categories = categories;
+        this.categoriesSubject.next(categories);
         return true;
       }),
       catchError(() => of(false))
@@ -336,8 +340,9 @@ export class LocalFileSystemService implements DataProvider {
       const fileHandle = await this.directoryHandle.getFileHandle('photos.json');
       const file = await fileHandle.getFile();
       const text = await file.text();
-      this.photos = JSON.parse(text);
-      return this.photos;
+      const photos = JSON.parse(text);
+      this.photosSubject.next(photos);
+      return photos;
     } catch {
       return [];
     }
@@ -355,8 +360,9 @@ export class LocalFileSystemService implements DataProvider {
       const fileHandle = await this.directoryHandle.getFileHandle('categories.json');
       const file = await fileHandle.getFile();
       const text = await file.text();
-      this.categories = JSON.parse(text);
-      return this.categories;
+      const categories = JSON.parse(text);
+      this.categoriesSubject.next(categories);
+      return categories;
     } catch {
       return [];
     }
