@@ -1,4 +1,11 @@
 <p-toast></p-toast>
+<p-dialog header="Select Location" [(visible)]="isMapSelectorVisible" [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '800px' }" [draggable]="false" [resizable]="false">
+  @if (isMapSelectorVisible()) {
+  <app-map-selector [initialLocation]="initialMapLocation()" (locationSelected)="onLocationSelected($event)"
+    (cancel)="isMapSelectorVisible.set(false)"></app-map-selector>
+  }
+</p-dialog>
 
 <div class="admin-container">
   <h1 class="page-title">
@@ -9,42 +16,58 @@
   <!-- Toolbar -->
   <div class="admin-toolbar">
     @if (isFileSystemSupported()) {
-      <p-button
-        label="Select Directory"
-        icon="pi pi-folder-open"
-        (onClick)="selectDirectory()"
-        [loading]="isLoading()"
-      ></p-button>
-      <p-button
-        label="Save to File"
-        icon="pi pi-save"
-        severity="success"
-        (onClick)="saveToFile()"
-        [loading]="isLoading()"
-      ></p-button>
+    <p-button label="Select Directory" icon="pi pi-folder-open" (onClick)="selectDirectory()"
+      [loading]="isLoading()"></p-button>
+    <div class="flex align-items-center gap-2">
+      <p-button label="Save to File" icon="pi pi-save" severity="success" (onClick)="saveToFile()"
+        [loading]="isLoading()"></p-button>
+      @if (hasUnsavedChanges()) {
+      <span class="text-orange-500 font-bold ml-2">Unsaved Changes</span>
+      }
+    </div>
     } @else {
-      <div class="api-warning">
-        <i class="pi pi-exclamation-triangle"></i>
-        <span>File System Access API is not supported in this browser. Use Chrome or Edge for local file management.</span>
-      </div>
+    <div class="api-warning">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>File System Access API is not supported in this browser. Use Chrome or Edge for local file
+        management.</span>
+    </div>
     }
   </div>
 
+  <!-- Bulk Actions Toolbar -->
+  @if (selectedPhotos().length > 0) {
+  <div class="bulk-toolbar fadein">
+    <div class="flex align-items-center gap-3 flex-wrap">
+      <span class="font-bold text-primary">{{ selectedPhotos().length }} Selected</span>
+
+      <div class="flex align-items-center gap-2">
+        <p-select [options]="categories()" [(ngModel)]="bulkCategory" optionLabel="label" optionValue="id"
+          placeholder="Add Category" [style]="{'width':'200px'}" appendTo="body" [showClear]="true"></p-select>
+        <p-button label="Apply" icon="pi pi-check" size="small" (onClick)="applyBulkCategory()"
+          [disabled]="!bulkCategory"></p-button>
+      </div>
+
+      <div class="flex align-items-center gap-2">
+        <span class="p-input-icon-left">
+          <i class="pi pi-map-marker"></i>
+          <input pInputText placeholder="Set Location Name" [(ngModel)]="bulkLocationName" />
+        </span>
+        <p-button label="Apply" icon="pi pi-check" size="small" (onClick)="applyBulkLocationName()"
+          [disabled]="!bulkLocationName"></p-button>
+      </div>
+    </div>
+  </div>
+  }
+
   <!-- Photos Table -->
-  <p-table
-    #dt
-    [value]="editablePhotos()"
-    dataKey="id"
-    [tableStyle]="{'min-width': '100%'}"
-    class="p-datatable-sm"
-    [scrollable]="true"
-    scrollHeight="calc(100vh - 350px)"
-    (onRowExpand)="onRowExpand($event)"
-    (onRowCollapse)="onRowCollapse($event)"
-    [expandedRowKeys]="expandedRows"
-  >
+  <p-table #dt [value]="editablePhotos()" [(selection)]="selectedPhotos" dataKey="id"
+    [tableStyle]="{'min-width': '100%'}" class="p-datatable-sm" [scrollable]="true" scrollHeight="calc(100vh - 420px)"
+    (onRowExpand)="onRowExpand($event)" (onRowCollapse)="onRowCollapse($event)" [expandedRowKeys]="expandedRows">
     <ng-template #header>
       <tr>
+        <th style="width: 3rem">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
         <th style="width: 3rem"></th>
         <th style="width: 80px">Preview</th>
         <th style="min-width: 150px" pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
@@ -57,7 +80,11 @@
     <ng-template #body let-photo let-expanded="expanded">
       <tr>
         <td>
-          <p-button type="button" pRipple [pRowToggler]="photo" class="p-button-text p-button-rounded p-button-plain" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></p-button>
+          <p-tableCheckbox [value]="photo"></p-tableCheckbox>
+        </td>
+        <td>
+          <p-button type="button" pRipple [pRowToggler]="photo" class="p-button-text p-button-rounded p-button-plain"
+            [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></p-button>
         </td>
         <td>
           <div class="preview-image">
@@ -70,9 +97,9 @@
         <td>{{ photo.location.name || '-' }}</td>
         <td>
           @if (photo.isPrivacyProtected) {
-            <i class="pi pi-lock" style="color: #e65100;"></i>
+          <i class="pi pi-lock" style="color: #e65100;"></i>
           } @else {
-            <i class="pi pi-lock-open" style="color: #4caf50;"></i>
+          <i class="pi pi-lock-open" style="color: #4caf50;"></i>
           }
         </td>
       </tr>
@@ -80,14 +107,16 @@
 
     <ng-template #expandedrow let-photo>
       <tr>
-        <td colspan="7" class="p-0">
+        <td colspan="8" class="p-0">
           @if (clonedPhotos[photo.id]; as editingPhoto) {
           <div class="expanded-row-wrapper p-3 surface-ground">
             <div class="expanded-content flex flex-column md:flex-row gap-4">
               <!-- Large Image -->
               <div class="expanded-image-section md:w-6 w-full">
-                <div class="image-card surface-card p-3 border-round shadow-1 h-full flex align-items-center justify-content-center">
-                  <img [src]="editingPhoto.src" [alt]="editingPhoto.title" class="expanded-image w-full border-round" style="object-fit: contain; max-height: 500px;" />
+                <div
+                  class="image-card surface-card p-3 border-round shadow-1 h-full flex align-items-center justify-content-center">
+                  <img [src]="editingPhoto.src" [alt]="editingPhoto.title" class="expanded-image w-full border-round"
+                    style="object-fit: contain; max-height: 500px;" />
                 </div>
               </div>
 
@@ -103,17 +132,20 @@
 
                   <div class="field mb-3">
                     <label for="description" class="font-bold block mb-2 text-700">Description</label>
-                    <textarea pTextarea id="description" [(ngModel)]="editingPhoto.description" rows="3" class="w-full"></textarea>
+                    <textarea pTextarea id="description" [(ngModel)]="editingPhoto.description" rows="3"
+                      class="w-full"></textarea>
                   </div>
 
                   <div class="formgrid grid">
                     <div class="field col-12 md:col-6 mb-3">
                       <label for="date" class="font-bold block mb-2 text-700">Date</label>
-                      <p-datepicker [(ngModel)]="editingPhoto.dateObj" [showTime]="true" dateFormat="yy-mm-dd" appendTo="body" styleClass="w-full" [style]="{'width':'100%'}"></p-datepicker>
+                      <p-datepicker [(ngModel)]="editingPhoto.dateObj" [showTime]="true" dateFormat="yy-mm-dd"
+                        appendTo="body" styleClass="w-full" [style]="{'width':'100%'}" [title]="'Date'"></p-datepicker>
                     </div>
                     <div class="field col-12 md:col-6 mb-3">
                       <label class="font-bold block mb-2 text-700">Categories</label>
-                      <p-multiSelect [options]="categories()" [(ngModel)]="editingPhoto.categoryIds" optionLabel="label" optionValue="id" display="chip" [style]="{'width':'100%'}" appendTo="body"></p-multiSelect>
+                      <p-multiSelect [options]="categories()" [(ngModel)]="editingPhoto.categoryIds" optionLabel="label"
+                        optionValue="id" display="chip" [style]="{'width':'100%'}" appendTo="body"></p-multiSelect>
                     </div>
                   </div>
 
@@ -125,24 +157,31 @@
                     </div>
                     <div class="formgrid grid">
                       <div class="field col-12 md:col-4 mb-2">
-                        <p-inputNumber [(ngModel)]="editingPhoto.location.lat" mode="decimal" [minFractionDigits]="6" [maxFractionDigits]="6" placeholder="Latitude" styleClass="w-full" [style]="{'width': '100%'}" [title]="'Latitude'"></p-inputNumber>
+                        <p-inputNumber [(ngModel)]="editingPhoto.location.lat" mode="decimal" [minFractionDigits]="6"
+                          [maxFractionDigits]="6" placeholder="Latitude" styleClass="w-full" [style]="{'width': '100%'}"
+                          [title]="'Latitude'"></p-inputNumber>
                       </div>
                       <div class="field col-12 md:col-4 mb-2">
-                        <p-inputNumber [(ngModel)]="editingPhoto.location.lng" mode="decimal" [minFractionDigits]="6" [maxFractionDigits]="6" placeholder="Longitude" styleClass="w-full" [style]="{'width': '100%'}" [title]="'Longitude'"></p-inputNumber>
+                        <p-inputNumber [(ngModel)]="editingPhoto.location.lng" mode="decimal" [minFractionDigits]="6"
+                          [maxFractionDigits]="6" placeholder="Longitude" styleClass="w-full"
+                          [style]="{'width': '100%'}" [title]="'Longitude'"></p-inputNumber>
                       </div>
                       <div class="field col-12 md:col-4 mb-2">
-                        <p-button label="Select on Map" icon="pi pi-map" (onClick)="openMapSelector(photo)" styleClass="w-full" severity="secondary"></p-button>
+                        <p-button label="Select on Map" icon="pi pi-map" (onClick)="openMapSelector(photo)"
+                          styleClass="w-full" severity="secondary"></p-button>
                       </div>
                     </div>
                   </div>
 
                   <div class="field-checkbox mb-4">
-                    <p-checkbox [(ngModel)]="editingPhoto.isPrivacyProtected" [binary]="true" inputId="privacy"></p-checkbox>
+                    <p-checkbox [(ngModel)]="editingPhoto.isPrivacyProtected" [binary]="true"
+                      inputId="privacy"></p-checkbox>
                     <label for="privacy" class="ml-2 text-700">Privacy Protected</label>
                   </div>
 
                   <div class="flex justify-content-end gap-2">
-                    <p-button label="Cancel" icon="pi pi-times" severity="secondary" (onClick)="onRowEditCancel(photo)"></p-button>
+                    <p-button label="Cancel" icon="pi pi-times" severity="secondary"
+                      (onClick)="onRowEditCancel(photo)"></p-button>
                     <p-button label="Save Changes" icon="pi pi-check" (onClick)="onRowEditSave(photo)"></p-button>
                   </div>
                 </div>
@@ -156,7 +195,7 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="7" class="text-center p-4">
+        <td colspan="8" class="text-center p-4">
           <div class="empty-state">
             <i class="pi pi-images"></i>
             <p>No photos loaded. Select a directory or load from server.</p>

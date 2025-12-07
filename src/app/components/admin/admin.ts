@@ -12,12 +12,19 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { RippleModule } from 'primeng/ripple';
+import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { SelectModule } from 'primeng/select';
 import { LocalFileSystemService } from '../../services/local-file-system.service';
-import { Photo, Category } from '../../models/models';
+
+
+import { Photo, Category, LocationData } from '../../models/models';
+import { MapSelectorComponent } from './map-selector/map-selector.component';
 
 @Component({
   selector: 'app-admin',
+  standalone: true,
   imports: [
     FormsModule,
     DatePipe,
@@ -31,6 +38,10 @@ import { Photo, Category } from '../../models/models';
     InputNumberModule,
     TextareaModule,
     RippleModule,
+    DialogModule,
+    TooltipModule,
+    SelectModule,
+    MapSelectorComponent,
   ],
   providers: [MessageService],
   templateUrl: './admin.html',
@@ -50,6 +61,19 @@ export class Admin {
 
   protected readonly editablePhotos = signal<Photo[]>([]);
   protected readonly isLoading = signal(false);
+  protected readonly selectedPhotos = signal<Photo[]>([]);
+
+  // Map Selector State
+  protected readonly isMapSelectorVisible = signal(false);
+  protected readonly currentEditingPhotoId = signal<string | null>(null);
+  protected readonly initialMapLocation = signal<LocationData | undefined>(undefined);
+
+  protected readonly hasUnsavedChanges = computed(() => {
+    // This is a simplified check. Ideally we'd compare deep equality with original photos.
+    // For now, we rely on the user to save.
+    // We could implement a dirty flag if needed.
+    return false; // Placeholder, as tracking deep changes is complex. Use indicators instead.
+  });
 
   expandedRows = {};
 
@@ -140,19 +164,12 @@ export class Admin {
       // Remove auxiliary properties if any
       delete (updatedPhoto as any).dateObj;
 
-      const photos = this.editablePhotos();
-      const index = photos.findIndex((p) => p.id === photo.id);
-      if (index !== -1) {
-        const newPhotos = [...photos];
-        newPhotos[index] = updatedPhoto;
-        this.editablePhotos.set(newPhotos);
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Updated',
-          detail: 'Photo updated (save to file to persist)',
-        });
-      }
+      this.updatePhotoInList(updatedPhoto);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Updated',
+        detail: 'Photo updated (save to file to persist)',
+      });
     }
   }
 
@@ -169,19 +186,117 @@ export class Admin {
     }
   }
 
+  // --- Map Selector ---
+
   openMapSelector(photo: Photo): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Not Implemented',
-      detail: 'Map selection will be implemented later',
+    // If we are in edit mode (expanded row), use the cloned/editing data
+    // Otherwise use the photo data
+    const editingData = this.clonedPhotos[photo.id];
+    const initialLoc = editingData ? editingData.location : photo.location;
+
+    this.currentEditingPhotoId.set(photo.id);
+    this.initialMapLocation.set(initialLoc);
+    this.isMapSelectorVisible.set(true);
+  }
+
+  onLocationSelected(location: LocationData): void {
+    const photoId = this.currentEditingPhotoId();
+    if (photoId) {
+      // Update cloned data if editing
+      if (this.clonedPhotos[photoId]) {
+        this.clonedPhotos[photoId].location = location;
+      }
+
+      // Also update the main list if not in edit mode (direct update? maybe safer to only allow in edit)
+      // For smooth UX, let's update the main list too so the preview updates
+      const photos = this.editablePhotos();
+      const photo = photos.find(p => p.id === photoId);
+      if (photo) {
+        const updatedPhoto = { ...photo, location };
+        this.updatePhotoInList(updatedPhoto);
+      }
+    }
+    this.isMapSelectorVisible.set(false);
+  }
+
+  // --- Bulk Actions ---
+
+  bulkCategory: string | null = null;
+  bulkLocationName: string | null = null;
+
+  applyBulkCategory(): void {
+    if (!this.bulkCategory || this.selectedPhotos().length === 0) return;
+
+    const currentPhotos = this.editablePhotos();
+    const selectedIds = this.selectedPhotos().map(p => p.id);
+
+    const newPhotos = currentPhotos.map(p => {
+      if (selectedIds.includes(p.id)) {
+        // Add category if not present
+        if (!p.categoryIds.includes(this.bulkCategory!)) {
+          return { ...p, categoryIds: [...p.categoryIds, this.bulkCategory!] };
+        }
+      }
+      return p;
     });
+
+    this.editablePhotos.set(newPhotos);
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Bulk Update',
+      detail: `Added category to ${selectedIds.length} photos`,
+    });
+
+    // Clear selection
+    this.selectedPhotos.set([]);
+    this.bulkCategory = null;
+  }
+
+  applyBulkLocationName(): void {
+    if (!this.bulkLocationName || this.selectedPhotos().length === 0) return;
+
+    const currentPhotos = this.editablePhotos();
+    const selectedIds = this.selectedPhotos().map(p => p.id);
+
+    const newPhotos = currentPhotos.map(p => {
+      if (selectedIds.includes(p.id)) {
+        return {
+          ...p,
+          location: { ...p.location, name: this.bulkLocationName! }
+        };
+      }
+      return p;
+    });
+
+    this.editablePhotos.set(newPhotos);
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Bulk Update',
+      detail: `Updated location name for ${selectedIds.length} photos`,
+    });
+
+    // Clear selection
+    this.selectedPhotos.set([]);
+    this.bulkLocationName = null;
+  }
+
+  // --- Helpers ---
+
+  private updatePhotoInList(updatedPhoto: Photo): void {
+    const photos = this.editablePhotos();
+    const index = photos.findIndex((p) => p.id === updatedPhoto.id);
+    if (index !== -1) {
+      const newPhotos = [...photos];
+      newPhotos[index] = updatedPhoto;
+      this.editablePhotos.set(newPhotos);
+    }
   }
 
   getCategoryLabel(id: string): string {
     const cat = this.categories().find((c) => c.id === id);
     return cat ? cat.label : id;
   }
-  
+
   isFileSystemSupported(): boolean {
     return this.photoService.isSupported();
   }

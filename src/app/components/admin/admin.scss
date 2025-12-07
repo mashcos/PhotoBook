@@ -28,6 +28,27 @@
   flex-wrap: wrap;
 }
 
+.bulk-toolbar {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #fff7e6;
+  border: 1px solid #ffe0b2;
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .api-warning {
   display: flex;
   align-items: center;
@@ -88,7 +109,7 @@
     background: #fff7e6;
   }
 
-  .p-datatable .p-datatable-thead > tr > th {
+  .p-datatable .p-datatable-thead>tr>th {
     background: #fff7e6;
     color: #e65100;
     font-weight: 600;
