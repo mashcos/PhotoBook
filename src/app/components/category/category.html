@@ -1,66 +1,64 @@
 <div class="category-container">
   <!-- Category Header -->
   @if (category(); as cat) {
-    <div class="category-header" [style.border-left-color]="cat.color">
-      <div class="category-icon" [style.background-color]="cat.color">
-        <i [class]="cat.icon"></i>
-      </div>
-      <div class="category-info">
-        <h1 class="category-title">{{ cat.label }}</h1>
-        <p class="category-description">{{ cat.description }}</p>
-      </div>
+  <div class="category-header" [style.border-left-color]="cat.color">
+    <div class="category-icon" [style.background-color]="cat.color">
+      <i [class]="cat.icon"></i>
     </div>
+    <div class="category-info">
+      <h1 class="category-title">{{ cat.label }}</h1>
+      <p class="category-description">{{ cat.description }}</p>
+    </div>
+  </div>
   }
 
   <!-- Category Navigation -->
   <div class="category-nav">
     <span class="nav-label">Categories:</span>
     @for (cat of categories(); track cat.id) {
-      <p-tag
-        [value]="cat.label"
-        [style]="{'background-color': categoryId() === cat.id ? cat.color : '#e0e0e0', 'color': categoryId() === cat.id ? 'white' : '#616161', 'cursor': 'pointer'}"
-        [routerLink]="['/category', cat.id]"
-      ></p-tag>
+    <p-tag [value]="cat.label"
+      [style]="{'background-color': categoryId() === cat.id ? cat.color : '#e0e0e0', 'color': categoryId() === cat.id ? 'white' : '#616161', 'cursor': 'pointer'}"
+      [routerLink]="['/category', cat.id]"></p-tag>
     }
   </div>
 
   <!-- Photo Grid -->
   <div class="grid photo-grid">
     @for (photo of photos(); track photo.id) {
-      <div class="col-12 sm:col-6 md:col-4 lg:col-3">
-        <div class="photo-card" [routerLink]="['/hub', photo.id]">
-          <div class="photo-image">
-            <img [src]="photo.src" [alt]="photo.title" />
-            @if (photo.isPrivacyProtected) {
-              <div class="privacy-indicator">
-                <i class="pi pi-lock"></i>
-              </div>
+    <div class="col-12 sm:col-6 md:col-4 lg:col-3">
+      <div class="photo-card" [routerLink]="['/hub', photo.id]">
+        <div class="photo-image">
+          <img [src]="photo.src" [alt]="photo.title" />
+          @if (photo.isPrivacyProtected) {
+          <div class="privacy-indicator">
+            <i class="pi pi-lock"></i>
+          </div>
+          }
+        </div>
+        <div class="photo-details">
+          <h3 class="photo-title">{{ photo.title }}</h3>
+          <div class="photo-meta">
+            <span class="date">
+              <i class="pi pi-calendar"></i>
+              {{ formatDate(photo.date) }}
+            </span>
+            @if ((photo | locationName:locations())) {
+            <span class="location">
+              <i class="pi pi-map-marker"></i>
+              {{ photo | locationName:locations() }}
+            </span>
             }
           </div>
-          <div class="photo-details">
-            <h3 class="photo-title">{{ photo.title }}</h3>
-            <div class="photo-meta">
-              <span class="date">
-                <i class="pi pi-calendar"></i>
-                {{ formatDate(photo.date) }}
-              </span>
-              @if (photo.location.name) {
-                <span class="location">
-                  <i class="pi pi-map-marker"></i>
-                  {{ photo.location.name }}
-                </span>
-              }
-            </div>
-          </div>
         </div>
       </div>
+    </div>
     } @empty {
-      <div class="col-12">
-        <div class="empty-state">
-          <i class="pi pi-images"></i>
-          <p>No photos found in this category</p>
-        </div>
+    <div class="col-12">
+      <div class="empty-state">
+        <i class="pi pi-images"></i>
+        <p>No photos found in this category</p>
       </div>
+    </div>
     }
   </div>
 </div>

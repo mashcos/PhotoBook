@@ -19,8 +19,9 @@ import { SelectModule } from 'primeng/select';
 import { LocalFileSystemService } from '../../services/local-file-system.service';
 
 
-import { Photo, Category, LocationData } from '../../models/models';
+import { Photo, Category, Location } from '../../models/models';
 import { MapSelectorComponent } from './map-selector/map-selector.component';
+import { LocationNamePipe } from '../../pipes/location-name.pipe';
 
 @Component({
   selector: 'app-admin',
@@ -42,6 +43,7 @@ import { MapSelectorComponent } from './map-selector/map-selector.component';
     TooltipModule,
     SelectModule,
     MapSelectorComponent,
+    LocationNamePipe,
   ],
   providers: [MessageService],
   templateUrl: './admin.html',
@@ -59,6 +61,14 @@ export class Admin {
     initialValue: [] as Category[],
   });
 
+  protected readonly locations = toSignal(this.photoService.getLocations(), {
+    initialValue: [] as Location[],
+  });
+
+  protected readonly reusableLocations = computed(() =>
+    this.locations().filter(l => l.isReuseLocation)
+  );
+
   protected readonly editablePhotos = signal<Photo[]>([]);
   protected readonly isLoading = signal(false);
   protected readonly selectedPhotos = signal<Photo[]>([]);
@@ -66,7 +76,7 @@ export class Admin {
   // Map Selector State
   protected readonly isMapSelectorVisible = signal(false);
   protected readonly currentEditingPhotoId = signal<string | null>(null);
-  protected readonly initialMapLocation = signal<LocationData | undefined>(undefined);
+  protected readonly initialMapLocation = signal<Location | undefined>(undefined);
 
   protected readonly hasUnsavedChanges = computed(() => {
     // This is a simplified check. Ideally we'd compare deep equality with original photos.
@@ -91,6 +101,7 @@ export class Admin {
       // Load existing data first
       await this.photoService.loadCategoriesFromDirectory();
       await this.photoService.loadPhotosFromDirectory();
+      await this.photoService.loadLocationsFromDirectory();
 
       const photos = await this.photoService.scanForImages();
 
@@ -148,7 +159,8 @@ export class Admin {
     const photo = event.data as Photo;
     this.clonedPhotos[photo.id] = {
       ...photo,
-      location: { ...photo.location },
+      // location: { ...photo.location }, // Removed direct location access
+      locationId: photo.locationId,
       dateObj: new Date(photo.date),
       categoryIds: [...photo.categoryIds],
     };
@@ -184,7 +196,8 @@ export class Admin {
     if (original) {
       this.clonedPhotos[photo.id] = {
         ...original,
-        location: { ...original.location },
+        // location: { ...original.location }, // Removed direct location access
+        locationId: original.locationId,
         dateObj: new Date(original.date),
         categoryIds: [...original.categoryIds],
       };
@@ -195,33 +208,140 @@ export class Admin {
 
   openMapSelector(photo: Photo): void {
     // If we are in edit mode (expanded row), use the cloned/editing data
-    // Otherwise use the photo data
+    // otherwise use the photo data.
     const editingData = this.clonedPhotos[photo.id];
-    const initialLoc = editingData ? editingData.location : photo.location;
+    const targetPhoto = editingData || photo;
+
+    // Resolve location
+    let initialLoc: Location | undefined;
+    if (targetPhoto.locationId) {
+      const loc = this.locations().find(l => l.id === targetPhoto.locationId);
+      if (loc) {
+        initialLoc = loc;
+      }
+    }
 
     this.currentEditingPhotoId.set(photo.id);
     this.initialMapLocation.set(initialLoc);
     this.isMapSelectorVisible.set(true);
   }
 
-  onLocationSelected(location: LocationData): void {
+  onLocationSelected(locationData: Location): void {
     const photoId = this.currentEditingPhotoId();
     if (photoId) {
-      // Update cloned data if editing
+      // Logic:
+      // 1. We received a new coordinate/name from map selector.
+      // 2. We should allow the user to 'Link' this to a photo.
+      // 3. BUT, strictly speaking, photos only hold `locationId`.
+      // 4. So we must either:
+      //    a) Update the CURRENTLY referenced location (if user wants to move the shared location).
+      //    b) Create a NEW location transparency.
+
+      // Current UX (before refactor) was: Update photo.location.
+      // New UX: We should probably create a NEW private location for this photo, OR prompt?
+      // For simplicity/safety: Create a NEW location for this unique selection, and link it.
+
+      // AUTO-CREATE NEW LOCATION
+      const newLocationId = crypto.randomUUID().replace('photo-', 'loc-');
+      const newLocation: Location = {
+        id: newLocationId,
+        name: locationData.name || 'New Location',
+        lat: locationData.lat,
+        lng: locationData.lng,
+        isReuseLocation: false // Private by default
+      };
+
+      // Add to global state
+      // (Ideally we call service method, but here we update signal/subject locally via service)
+      const currentLocs = this.locations();
+      // We need to save this location otherwise it's lost on reload? 
+      // The `saveLocations` call usually persists all.
+      // Let's optimistic update and assume user will SAVE later?
+      // Actually, locations are saved separately usually?
+      // In `LocalFileSystemService`, `saveLocations` is explicit.
+      // If we just adding to signal, we need a way to persist it when "Save Changes" is clicked.
+      // Or we persist immediately.
+
+      // DECISION: Map Selector interaction usually implies "Set this photo's location to X".
+      // We will create a new Location entry, add it to service (which updates signal), and assign ID.
+      // We WON'T auto-save to disk yet, unless we want to. But `locations.json` is separate.
+      // Let's add it to the service state.
+
+      // Hack: we need to access the Subject in service to push?
+      // Or we can just use `saveLocations` immediately? 
+      // Saving immediately is safer for consistency.
+
+      this.photoService.saveLocations([...currentLocs, newLocation]).subscribe(() => {
+        // Success
+        this.messageService.add({ severity: 'info', summary: 'Location Created', detail: 'New location created from map selection' });
+      });
+
+      // Update cloned/main photo
       if (this.clonedPhotos[photoId]) {
-        this.clonedPhotos[photoId].location = location;
+        this.clonedPhotos[photoId].locationId = newLocationId;
       }
 
-      // Also update the main list if not in edit mode (direct update? maybe safer to only allow in edit)
-      // For smooth UX, let's update the main list too so the preview updates
       const photos = this.editablePhotos();
       const photo = photos.find(p => p.id === photoId);
       if (photo) {
-        const updatedPhoto = { ...photo, location };
+        const updatedPhoto = { ...photo, locationId: newLocationId };
         this.updatePhotoInList(updatedPhoto);
       }
     }
     this.isMapSelectorVisible.set(false);
+  }
+
+  // --- Location Management ---
+
+  async saveNewLocation(photo: any): Promise<void> {
+    // In new model, we edit the location name potentially via a bound input to... what?
+    // If the input was bound to `photo.location.name`, that's gone.
+    // The template likely binds to a temporary field or we need to look up component state.
+
+    // Assuming template will be updated to bind to a variable or we look up the location.
+    // BUT, if we are editing a photo with a locationId, we are essentially renaming the referenced location?
+    // OR we are creating a new reusable location from the current private one?
+
+    if (!photo.locationId) return;
+
+    const loc = this.locations().find(l => l.id === photo.locationId);
+    if (!loc) return;
+
+    // Convert current (private?) location to Reusable
+    if (loc.isReuseLocation) {
+      this.messageService.add({ severity: 'info', summary: 'Already Reusable', detail: 'This location is already reusable.' });
+      return;
+    }
+
+    if (!loc.name) {
+      this.messageService.add({ severity: 'warn', summary: 'Missing Name', detail: 'Please enter a location name first' });
+      return;
+    }
+
+    // Update to reusable
+    const updatedLocation = { ...loc, isReuseLocation: true };
+    const allLocations = this.locations().map(l => l.id === loc.id ? updatedLocation : l);
+
+    this.photoService.saveLocations(allLocations).subscribe(success => {
+      if (success) {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Location Saved',
+          detail: 'Location marked as reusable'
+        });
+
+        // Update photo state if needed (it already refs the ID)
+        photo.isReuseLocation = true; // This field on Photo might be redundant now? Yes.
+      }
+    });
+  }
+
+  onReusableLocationSelect(photoId: string, locationId: string): void {
+    const location = this.locations().find(l => l.id === locationId);
+    if (location && this.clonedPhotos[photoId]) {
+      this.clonedPhotos[photoId].locationId = locationId;
+      this.clonedPhotos[photoId].isReuseLocation = true;
+    }
   }
 
   // --- Bulk Actions ---
@@ -263,21 +383,48 @@ export class Admin {
     const currentPhotos = this.editablePhotos();
     const selectedIds = this.selectedPhotos().map(p => p.id);
 
+    // 1. Create a new single location for ALL these photos?
+    //    If we give them all the same name, they are logically the same place?
+    //    If they have different coordinates, we can't share a single Location object easily unless we average them (bad).
+    //    OR we just update the name of their individual locations?
+
+    // User expectation for "Bulk Location Name": "Set all these to 'Paris'".
+    // If they have different coords, they are different 'Paris' locations?
+    // OR we pick one coordinate?
+    // Simpler: iterate, find their referenced location, update its name.
+
+    // Problem: If they share location with UNSELECTED photos, we rename for them too?
+    // Side effects!
+
+    // For now: Iterate selected photos.
+    // If photo has locationId -> Find Location -> Update Name -> Save Location.
+
+    const locations = [...this.locations()];
+    let updatedAny = false;
+
     const newPhotos = currentPhotos.map(p => {
       if (selectedIds.includes(p.id)) {
-        return {
-          ...p,
-          location: { ...p.location, name: this.bulkLocationName! }
-        };
+        if (p.locationId) {
+          const locIndex = locations.findIndex(l => l.id === p.locationId);
+          if (locIndex !== -1) {
+            locations[locIndex] = { ...locations[locIndex], name: this.bulkLocationName! };
+            updatedAny = true;
+          }
+        }
+        return p;
       }
       return p;
     });
+
+    if (updatedAny) {
+      this.photoService.saveLocations(locations).subscribe();
+    }
 
     this.editablePhotos.set(newPhotos);
     this.messageService.add({
       severity: 'success',
       summary: 'Bulk Update',
-      detail: `Updated location name for ${selectedIds.length} photos`,
+      detail: `Updated location names for selected photos`,
     });
 
     // Clear selection

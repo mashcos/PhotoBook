@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { Photo, Category } from '../models/models';
+import { Photo, Category, Location } from '../models/models';
 
 /**
  * DataProvider interface to switch between Server-Mode (HTTP) and Local-Dev-Mode (File System)
@@ -34,4 +34,14 @@ export interface DataProvider {
    * Save categories (for local mode)
    */
   saveCategories(categories: Category[]): Observable<boolean>;
+
+  /**
+   * Load all locations
+   */
+  getLocations(): Observable<any[]>; // Using any[] temporarily until import is fixed, but actually I should import Location
+
+  /**
+   * Save locations (for local mode)
+   */
+  saveLocations(locations: any[]): Observable<boolean>;
 }

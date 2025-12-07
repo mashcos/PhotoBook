@@ -6,11 +6,12 @@ import { ChipModule } from 'primeng/chip';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { PhotoService } from '../../services/photo.service';
-import { Photo, Category } from '../../models/models';
+import { Photo, Category, Location } from '../../models/models';
+import { LocationNamePipe } from '../../pipes/location-name.pipe';
 
 @Component({
   selector: 'app-hub',
-  imports: [RouterLink, ChipModule, ButtonModule, CardModule],
+  imports: [RouterLink, ChipModule, ButtonModule, CardModule, LocationNamePipe],
   templateUrl: './hub.html',
   styleUrl: './hub.scss',
 })
@@ -29,6 +30,10 @@ export class Hub {
 
   protected readonly categories = toSignal(this.photoService.getCategories(), {
     initialValue: [] as Category[],
+  });
+
+  protected readonly locations = toSignal(this.photoService.getLocations(), {
+    initialValue: [] as Location[],
   });
 
   protected readonly photoCategories = computed(() => {

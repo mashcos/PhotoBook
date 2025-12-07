@@ -1,45 +1,46 @@
 <div class="hub-container">
   @if (photo(); as p) {
-    <div class="photo-detail">
-      <!-- Photo Image -->
-      <div class="photo-image-wrapper">
-        <img [src]="p.src" [alt]="p.title" class="photo-image" />
-        @if (p.isPrivacyProtected) {
-          <div class="privacy-badge">
-            <i class="pi pi-lock"></i>
-          </div>
+  <div class="photo-detail">
+    <!-- Photo Image -->
+    <div class="photo-image-wrapper">
+      <img [src]="p.src" [alt]="p.title" class="photo-image" />
+      @if (p.isPrivacyProtected) {
+      <div class="privacy-badge">
+        <i class="pi pi-lock"></i>
+      </div>
+      }
+    </div>
+
+    <!-- Photo Info -->
+    <div class="photo-info">
+      <h1 class="photo-title">{{ p.title }}</h1>
+      <p class="photo-description">{{ p.description }}</p>
+
+      <!-- Social Media Style Chips -->
+      <div class="chip-container">
+        <p-chip [label]="formatDate(p.date)" icon="pi pi-calendar" class="chip-date"></p-chip>
+        @if ((p | locationName:locations())) {
+        <p-chip [label]="(p | locationName:locations())" icon="pi pi-map-marker" class="chip-location"></p-chip>
+        }
+        @for (cat of photoCategories(); track cat.id) {
+        <p-chip [label]="cat.label" [icon]="cat.icon"
+          [style]="{'background-color': cat.color, 'color': 'white'}"></p-chip>
         }
       </div>
-
-      <!-- Photo Info -->
-      <div class="photo-info">
-        <h1 class="photo-title">{{ p.title }}</h1>
-        <p class="photo-description">{{ p.description }}</p>
-
-        <!-- Social Media Style Chips -->
-        <div class="chip-container">
-          <p-chip [label]="formatDate(p.date)" icon="pi pi-calendar" class="chip-date"></p-chip>
-          @if (p.location.name) {
-            <p-chip [label]="p.location.name" icon="pi pi-map-marker" class="chip-location"></p-chip>
-          }
-          @for (cat of photoCategories(); track cat.id) {
-            <p-chip [label]="cat.label" [icon]="cat.icon" [style]="{'background-color': cat.color, 'color': 'white'}"></p-chip>
-          }
-        </div>
-      </div>
-
-      <!-- Navigation -->
-      <div class="nav-buttons">
-        <p-button label="Back to Timeline" icon="pi pi-arrow-left" routerLink="/timeline" [outlined]="true"></p-button>
-        <p-button label="View on Map" icon="pi pi-map" routerLink="/map" severity="secondary"></p-button>
-      </div>
     </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+      <p-button label="Back to Timeline" icon="pi pi-arrow-left" routerLink="/timeline" [outlined]="true"></p-button>
+      <p-button label="View on Map" icon="pi pi-map" routerLink="/map" severity="secondary"></p-button>
+    </div>
+  </div>
   } @else {
-    <p-card header="Photo Not Found">
-      <p>The requested photo could not be found.</p>
-      <ng-template pTemplate="footer">
-        <p-button label="Go to Timeline" routerLink="/timeline"></p-button>
-      </ng-template>
-    </p-card>
+  <p-card header="Photo Not Found">
+    <p>The requested photo could not be found.</p>
+    <ng-template pTemplate="footer">
+      <p-button label="Go to Timeline" routerLink="/timeline"></p-button>
+    </ng-template>
+  </p-card>
   }
 </div>

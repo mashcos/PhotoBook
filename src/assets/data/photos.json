@@ -5,12 +5,10 @@
     "title": "Brandenburg Gate at Sunset",
     "description": "The iconic Brandenburg Gate illuminated by golden hour light",
     "date": "2024-07-15T18:30:00Z",
-    "location": {
-      "name": "Berlin, Germany",
-      "lat": 52.5163,
-      "lng": 13.3777
-    },
-    "categoryIds": ["cat-architecture", "cat-landscape"],
+    "categoryIds": [
+      "cat-architecture",
+      "cat-landscape"
+    ],
     "isPrivacyProtected": false
   },
   {
@@ -19,12 +17,10 @@
     "title": "Rhine Valley Vineyards",
     "description": "Terraced vineyards along the scenic Rhine River",
     "date": "2024-07-18T10:15:00Z",
-    "location": {
-      "name": "Rhine Valley, Germany",
-      "lat": 50.0823,
-      "lng": 7.7189
-    },
-    "categoryIds": ["cat-landscape", "cat-nature"],
+    "categoryIds": [
+      "cat-landscape",
+      "cat-nature"
+    ],
     "isPrivacyProtected": false
   },
   {
@@ -33,12 +29,9 @@
     "title": "Neuschwanstein Castle",
     "description": "The fairy-tale castle nestled in the Bavarian Alps",
     "date": "2024-07-20T14:00:00Z",
-    "location": {
-      "name": "Schwangau, Germany",
-      "lat": 47.5576,
-      "lng": 10.7498
-    },
-    "categoryIds": ["cat-architecture"],
+    "categoryIds": [
+      "cat-architecture"
+    ],
     "isPrivacyProtected": false
   },
   {
@@ -47,12 +40,10 @@
     "title": "Black Forest Trail",
     "description": "A peaceful hiking trail through the Black Forest",
     "date": "2024-07-22T09:00:00Z",
-    "location": {
-      "name": "Black Forest, Germany",
-      "lat": 48.0905,
-      "lng": 8.1544
-    },
-    "categoryIds": ["cat-nature", "cat-landscape"],
+    "categoryIds": [
+      "cat-nature",
+      "cat-landscape"
+    ],
     "isPrivacyProtected": false
   },
   {
@@ -61,12 +52,10 @@
     "title": "Congress Opening Ceremony",
     "description": "Delegates gathering for the international congress opening",
     "date": "2024-07-25T09:30:00Z",
-    "location": {
-      "name": "Munich, Germany",
-      "lat": 48.1351,
-      "lng": 11.5820
-    },
-    "categoryIds": ["cat-events", "cat-people"],
+    "categoryIds": [
+      "cat-events",
+      "cat-people"
+    ],
     "isPrivacyProtected": true
   }
 ]

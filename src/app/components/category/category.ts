@@ -5,11 +5,12 @@ import { switchMap, map } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { PhotoService } from '../../services/photo.service';
-import { Photo, Category as CategoryModel } from '../../models/models';
+import { Photo, Category as CategoryModel, Location } from '../../models/models';
+import { LocationNamePipe } from '../../pipes/location-name.pipe';
 
 @Component({
   selector: 'app-category',
-  imports: [RouterLink, ButtonModule, TagModule],
+  imports: [RouterLink, ButtonModule, TagModule, LocationNamePipe],
   templateUrl: './category.html',
   styleUrl: './category.scss',
 })
@@ -44,6 +45,10 @@ export class CategoryComponent {
 
   protected readonly categories = toSignal(this.photoService.getCategories(), {
     initialValue: [] as CategoryModel[],
+  });
+
+  protected readonly locations = toSignal(this.photoService.getLocations(), {
+    initialValue: [] as Location[],
   });
 
   protected formatDate(dateStr: string): string {

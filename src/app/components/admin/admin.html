@@ -94,7 +94,7 @@
         <td>{{ photo.title }}</td>
         <td>{{ photo.description }}</td>
         <td>{{ photo.date | date:'shortDate' }}</td>
-        <td>{{ photo.location.name || '-' }}</td>
+        <td>{{ (photo | locationName:locations()) || '-' }}</td>
         <td>
           @if (photo.isPrivacyProtected) {
           <i class="pi pi-lock" style="color: #e65100;"></i>
@@ -152,27 +152,17 @@
                   <div class="field mb-3">
                     <label class="font-bold block mb-2 text-700">Location</label>
                     <div class="formgrid grid">
-                      <div class="field col-12 md:col-8 mb-2">
-                        <input pInputText placeholder="Location Name" [(ngModel)]="editingPhoto.location.name" />
+                      <div class="field col-12 md:col-10 mb-2">
+                        <p-select [options]="reusableLocations()" optionLabel="name" optionValue="id"
+                          [(ngModel)]="editingPhoto.locationId"
+                          (onChange)="onReusableLocationSelect(photo.id, $event.value)"
+                          placeholder="Select existing location" [showClear]="true" [style]="{'width':'100%'}"
+                          appendTo="body"></p-select>
                       </div>
-                      <div class="field-checkbox col-12 md:col-4 mb-2">
-                        <p-checkbox [(ngModel)]="editingPhoto.isReuseLocation" [binary]="true"
-                          inputId="reuse"></p-checkbox>
-                        <label for="reuse" class="ml-2 text-700">Reuse Location</label>
-                      </div>
-                      <div class="field col-12 md:col-4 mb-2">
-                        <p-inputNumber [(ngModel)]="editingPhoto.location.lat" mode="decimal" [minFractionDigits]="6"
-                          [maxFractionDigits]="6" placeholder="Latitude" styleClass="w-full" [style]="{'width': '100%'}"
-                          [title]="'Latitude'"></p-inputNumber>
-                      </div>
-                      <div class="field col-12 md:col-4 mb-2">
-                        <p-inputNumber [(ngModel)]="editingPhoto.location.lng" mode="decimal" [minFractionDigits]="6"
-                          [maxFractionDigits]="6" placeholder="Longitude" styleClass="w-full"
-                          [style]="{'width': '100%'}" [title]="'Longitude'"></p-inputNumber>
-                      </div>
-                      <div class="field col-12 md:col-4 mb-2">
-                        <p-button label="Select on Map" icon="pi pi-map" (onClick)="openMapSelector(photo)"
-                          styleClass="w-full" severity="secondary"></p-button>
+
+                      <div class="field col-12 md:col-2 mb-2">
+                        <button pButton icon="pi pi-map" (click)="openMapSelector(photo)" pTooltip="Select on Map"
+                          class="p-button-secondary"></button>
                       </div>
                     </div>
                   </div>

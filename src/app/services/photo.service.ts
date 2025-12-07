@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, of, shareReplay, catchError } from 'rxjs';
-import { Photo, Category } from '../models/models';
+import { Photo, Category, Location } from '../models/models';
 import { DataProvider } from './data-provider.interface';
 
 /**
@@ -85,5 +85,25 @@ export class PhotoService implements DataProvider {
   clearCache(): void {
     this.photos$ = undefined;
     this.categories$ = undefined;
+    this.locations$ = undefined;
+  }
+
+  // --- Locations ---
+  private readonly locationsUrl = 'assets/local/locations.json';
+  private locations$?: Observable<Location[]>;
+
+  getLocations(): Observable<Location[]> {
+    if (!this.locations$) {
+      this.locations$ = this.http.get<Location[]>(this.locationsUrl).pipe(
+        shareReplay(1),
+        catchError(() => of([]))
+      );
+    }
+    return this.locations$;
+  }
+
+  saveLocations(_locations: Location[]): Observable<boolean> {
+    console.warn('PhotoService: saveLocations is not supported in HTTP mode');
+    return of(false);
   }
 }

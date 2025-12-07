@@ -11,7 +11,7 @@ import {
     LeafletMouseEvent,
     Icon,
 } from 'leaflet';
-import { LocationData } from '../../../models/models';
+import { Location } from '../../../models/models';
 import { ButtonModule } from 'primeng/button';
 
 // Fix for default marker icons in Leaflet
@@ -29,7 +29,7 @@ Icon.Default.mergeOptions({
     styleUrl: './map-selector.scss',
 })
 export class MapSelectorComponent {
-    @Input() set initialLocation(loc: LocationData | undefined) {
+    @Input() set initialLocation(loc: Location | undefined) {
         if (loc && loc.lat && loc.lng) {
             this.currentCenter = latLng(loc.lat, loc.lng);
             this.currentZoom = 13;
@@ -42,7 +42,7 @@ export class MapSelectorComponent {
         }
     }
 
-    @Output() locationSelected = new EventEmitter<LocationData>();
+    @Output() locationSelected = new EventEmitter<Location>();
     @Output() cancel = new EventEmitter<void>();
 
     // Map state
@@ -94,9 +94,11 @@ export class MapSelectorComponent {
         if (m) {
             const { lat, lng } = m.getLatLng();
             this.locationSelected.emit({
+                id: crypto.randomUUID(),
                 name: '', // Determine name via geocoding later if possible
                 lat,
                 lng,
+                isReuseLocation: false,
             });
         }
     }

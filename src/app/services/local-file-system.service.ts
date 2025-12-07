@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, from, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { Photo, Category, LocationData } from '../models/models';
+import { Photo, Category, Location } from '../models/models';
 import { DataProvider } from './data-provider.interface';
 import EXIF from 'exif-js';
 
@@ -48,6 +48,7 @@ export class LocalFileSystemService implements DataProvider {
   // Use BehaviorSubjects to hold state and emit updates
   private photosSubject = new BehaviorSubject<Photo[]>([]);
   private categoriesSubject = new BehaviorSubject<Category[]>([]);
+  private locationsSubject = new BehaviorSubject<Location[]>([]);
 
   /**
    * Check if File System Access API is supported
@@ -144,23 +145,43 @@ export class LocalFileSystemService implements DataProvider {
     const src = "assets/local/" + file.name;
     const exifData = await this.extractExifData(file);
 
-    return {
+    const photo: Photo = {
       id,
       src,
       title: file.name.replace(/\.[^/.]+$/, ''),
       description: '',
       date: exifData.date || parseWhatsappDate(file.name) || new Date(file.lastModified).toISOString(),
-      location: exifData.location || { name: '', lat: 0, lng: 0 },
       categoryIds: [],
       isPrivacyProtected: false,
       isReuseLocation: false,
+      locationId: undefined
     };
+
+    if (exifData.location && exifData.location.lat !== 0 && exifData.location.lng !== 0) {
+      // Create a new location for this photo
+      const newLocationId = this.generateUniqueId();
+      const newLocation: Location = {
+        id: newLocationId,
+        name: '', // Default name for new EXIF location
+        lat: exifData.location.lat,
+        lng: exifData.location.lng,
+        isReuseLocation: false
+      };
+
+      this.locationsSubject.next([...this.locationsSubject.value, newLocation]);
+      // We should technically save locations here? 
+      // Or rely on user to save later. 
+      // For now, in-memory is fine until "Save" is clicked.
+      photo.locationId = newLocationId;
+    }
+
+    return photo;
   }
 
   /**
    * Extract EXIF data from an image file
    */
-  private extractExifData(file: File): Promise<{ date?: string; location?: LocationData }> {
+  private extractExifData(file: File): Promise<{ date?: string; location?: Location }> {
     return new Promise((resolve) => {
       const reader = new FileReader();
 
@@ -185,7 +206,7 @@ export class LocalFileSystemService implements DataProvider {
           const tags = exifObj.readFromBinaryFile(arrayBuffer) as ExifTags | null;
 
           if (tags) {
-            const result: { date?: string; location?: LocationData } = {};
+            const result: { date?: string; location?: Location } = {};
 
             // Extract date
             if (tags.DateTimeOriginal || tags.DateTime) {
@@ -209,11 +230,11 @@ export class LocalFileSystemService implements DataProvider {
                 tags.GPSLongitudeRef || 'E'
               );
 
-              result.location = {
+              /* result.location = {
                 name: '',
                 lat,
                 lng,
-              };
+              };  TODO!*/
             }
 
             resolve(result);
@@ -368,6 +389,46 @@ export class LocalFileSystemService implements DataProvider {
       return [];
     }
   }
+
+  // --- Locations ---
+
+  getLocations(): Observable<Location[]> {
+    return this.locationsSubject.asObservable();
+  }
+
+  async loadLocationsFromDirectory(): Promise<Location[]> {
+    if (!this.directoryHandle) {
+      return [];
+    }
+
+    try {
+      const fileHandle = await this.directoryHandle.getFileHandle('locations.json');
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      const locations = JSON.parse(text);
+      this.locationsSubject.next(locations);
+      return locations;
+    } catch {
+      return [];
+    }
+  }
+
+  saveLocations(locations: Location[]): Observable<boolean> {
+    if (!this.directoryHandle) {
+      return of(false);
+    }
+
+    return from(this.saveJsonFile('locations.json', locations)).pipe(
+      map(() => {
+        this.locationsSubject.next(locations);
+        return true;
+      }),
+      catchError((err) => {
+        console.error('Error saving locations:', err);
+        return of(false);
+      })
+    );
+  }
 }
 
 function parseWhatsappDate(name: string): string | null {
@@ -380,4 +441,3 @@ function parseWhatsappDate(name: string): string | null {
   }
   return null;
 }
-

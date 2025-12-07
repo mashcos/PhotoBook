@@ -1,13 +1,4 @@
 /**
- * Location data for a photo
- */
-export interface LocationData {
-  name: string;
-  lat: number;
-  lng: number;
-}
-
-/**
  * Category definition for organizing photos
  */
 export interface Category {
@@ -16,6 +7,18 @@ export interface Category {
   icon: string;
   description: string;
   color: string;
+}
+
+
+/**
+ * Shared Location definition for reusable locations
+ */
+export interface Location {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  isReuseLocation: boolean;
 }
 
 /**
@@ -27,7 +30,7 @@ export interface Photo {
   title: string;
   description: string;
   date: string;
-  location: LocationData;
+  locationId?: string; // Reference to a shared Location
   categoryIds: string[];
   isPrivacyProtected: boolean;
   isReuseLocation: boolean;

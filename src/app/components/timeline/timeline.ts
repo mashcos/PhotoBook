@@ -5,7 +5,8 @@ import { TimelineModule } from 'primeng/timeline';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { PhotoService } from '../../services/photo.service';
-import { Photo } from '../../models/models';
+import { Photo, Location } from '../../models/models';
+import { LocationNamePipe } from '../../pipes/location-name.pipe';
 
 interface TimelineEvent {
   date: string;
@@ -15,7 +16,7 @@ interface TimelineEvent {
 
 @Component({
   selector: 'app-timeline',
-  imports: [RouterLink, TimelineModule, CardModule, ButtonModule],
+  imports: [RouterLink, TimelineModule, CardModule, ButtonModule, LocationNamePipe],
   templateUrl: './timeline.html',
   styleUrl: './timeline.scss',
 })
@@ -26,6 +27,10 @@ export class Timeline {
     initialValue: [] as Photo[],
   });
 
+  protected readonly locations = toSignal(this.photoService.getLocations(), {
+    initialValue: [] as Location[],
+  });
+
   protected readonly groupedPhotos = computed<TimelineEvent[]>(() => {
     const photos = this.photos();
     const groups = new Map<string, Photo[]>();
@@ -34,7 +39,7 @@ export class Timeline {
     for (const photo of photos) {
       const date = new Date(photo.date);
       const dateKey = `${date.getFullYear()}-${date.getMonth()}`; // Key: "YYYY-MonthIndex"
-      
+
       if (!groups.has(dateKey)) {
         groups.set(dateKey, []);
       }
@@ -44,9 +49,9 @@ export class Timeline {
     // Convert Map to array and sort
     return Array.from(groups.entries())
       .map(([_, groupPhotos]) => {
-         // Use the date from the first photo as the representative date for sorting/formatting
-         const representativeDate = groupPhotos[0].date;
-         return {
+        // Use the date from the first photo as the representative date for sorting/formatting
+        const representativeDate = groupPhotos[0].date;
+        return {
           date: representativeDate,
           formattedDate: this.formatDate(representativeDate),
           photos: groupPhotos
