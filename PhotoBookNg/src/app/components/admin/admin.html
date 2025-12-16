@@ -2,7 +2,7 @@
 <p-dialog header="Select Location" [(visible)]="isMapSelectorVisible" [modal]="true"
   [style]="{ width: '90vw', maxWidth: '800px' }" [draggable]="false" [resizable]="false">
   @if (isMapSelectorVisible()) {
-  <app-map-selector [initialLocation]="initialMapLocation()" (locationSelected)="onLocationSelected($event)"
+  <app-map-selector [initialLocation]="initialMapLocation()" (save)="onMapSave($event)"
     (cancel)="isMapSelectorVisible.set(false)"></app-map-selector>
   }
 </p-dialog>

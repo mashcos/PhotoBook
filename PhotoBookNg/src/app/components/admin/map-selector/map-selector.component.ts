@@ -1,5 +1,8 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal, effect } from '@angular/core';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { CheckboxModule } from 'primeng/checkbox';
 import {
     latLng,
     tileLayer,
@@ -24,26 +27,39 @@ Icon.Default.mergeOptions({
 @Component({
     selector: 'app-map-selector',
     standalone: true,
-    imports: [LeafletModule, ButtonModule],
+    imports: [LeafletModule, ButtonModule, FormsModule, InputTextModule, CheckboxModule],
     templateUrl: './map-selector.html',
     styleUrl: './map-selector.scss',
 })
 export class MapSelectorComponent {
     @Input() set initialLocation(loc: Location | undefined) {
-        if (loc && loc.lat && loc.lng) {
-            this.currentCenter = latLng(loc.lat, loc.lng);
-            this.currentZoom = 13;
-            this.updateMarker(loc.lat, loc.lng);
+        if (loc) {
+            if (loc.lat && loc.lng) {
+                this.currentCenter = latLng(loc.lat, loc.lng);
+                this.currentZoom = 13;
+                this.updateMarker(loc.lat, loc.lng);
+            }
+            this.locationName.set(loc.name || '');
+            this.isReuseLocation.set(loc.isReuseLocation || false);
+            this.originalLocationId = loc.id;
         } else {
             // Default to Germany center if no location
             this.currentCenter = latLng(51.1657, 10.4515);
             this.currentZoom = 6;
             this.currentMarker.set(undefined);
+            this.locationName.set('');
+            this.isReuseLocation.set(false);
+            this.originalLocationId = undefined;
         }
     }
 
-    @Output() locationSelected = new EventEmitter<Location>();
+    @Output() save = new EventEmitter<{ mode: 'create' | 'update'; location: Location }>();
     @Output() cancel = new EventEmitter<void>();
+
+    // Form State
+    protected readonly locationName = signal('');
+    protected readonly isReuseLocation = signal(false);
+    protected originalLocationId: string | undefined;
 
     // Map state
     protected currentCenter = latLng(51.1657, 10.4515);
@@ -89,17 +105,33 @@ export class MapSelectorComponent {
         this.currentMarker.set(newMarker);
     }
 
-    confirmSelection(): void {
+    onSave(mode: 'create' | 'update'): void {
         const m = this.currentMarker();
         if (m) {
             const { lat, lng } = m.getLatLng();
-            this.locationSelected.emit({
-                id: crypto.randomUUID(),
-                name: '', // Determine name via geocoding later if possible
+
+            // Should we block if name is empty? Maybe for reusable locations?
+            // For now allowing empty names as per previous behavior, but usually name is desired.
+
+            const location: Location = {
+                id: mode === 'update' && this.originalLocationId ? this.originalLocationId : crypto.randomUUID(),
+                name: this.locationName(),
                 lat,
                 lng,
-                isReuseLocation: false,
-            });
+                isReuseLocation: this.isReuseLocation(),
+            };
+
+            this.save.emit({ mode, location });
         }
+    }
+
+    onSearchName(): void {
+        console.log('Search Name clicked');
+        // Placeholder for future geocoding reverse lookup
+    }
+
+    onSearchLocation(): void {
+        console.log('Search Location clicked');
+        // Placeholder for future geocoding lookup
     }
 }

@@ -226,68 +226,46 @@ export class Admin {
     this.isMapSelectorVisible.set(true);
   }
 
-  onLocationSelected(locationData: Location): void {
+  onMapSave(event: { mode: 'create' | 'update'; location: Location }): void {
+    const { mode, location } = event;
     const photoId = this.currentEditingPhotoId();
-    if (photoId) {
-      // Logic:
-      // 1. We received a new coordinate/name from map selector.
-      // 2. We should allow the user to 'Link' this to a photo.
-      // 3. BUT, strictly speaking, photos only hold `locationId`.
-      // 4. So we must either:
-      //    a) Update the CURRENTLY referenced location (if user wants to move the shared location).
-      //    b) Create a NEW location transparency.
 
-      // Current UX (before refactor) was: Update photo.location.
-      // New UX: We should probably create a NEW private location for this photo, OR prompt?
-      // For simplicity/safety: Create a NEW location for this unique selection, and link it.
-
-      // AUTO-CREATE NEW LOCATION
-      const newLocationId = crypto.randomUUID().replace('photo-', 'loc-');
-      const newLocation: Location = {
-        id: newLocationId,
-        name: locationData.name || 'New Location',
-        lat: locationData.lat,
-        lng: locationData.lng,
-        isReuseLocation: false // Private by default
-      };
-
-      // Add to global state
-      // (Ideally we call service method, but here we update signal/subject locally via service)
+    if (mode === 'create') {
       const currentLocs = this.locations();
-      // We need to save this location otherwise it's lost on reload? 
-      // The `saveLocations` call usually persists all.
-      // Let's optimistic update and assume user will SAVE later?
-      // Actually, locations are saved separately usually?
-      // In `LocalFileSystemService`, `saveLocations` is explicit.
-      // If we just adding to signal, we need a way to persist it when "Save Changes" is clicked.
-      // Or we persist immediately.
+      // Add new location to global list
+      this.photoService.saveLocations([...currentLocs, location]).subscribe(success => {
+        if (success) {
+          this.messageService.add({ severity: 'success', summary: 'Location Created', detail: 'New location created' });
 
-      // DECISION: Map Selector interaction usually implies "Set this photo's location to X".
-      // We will create a new Location entry, add it to service (which updates signal), and assign ID.
-      // We WON'T auto-save to disk yet, unless we want to. But `locations.json` is separate.
-      // Let's add it to the service state.
-
-      // Hack: we need to access the Subject in service to push?
-      // Or we can just use `saveLocations` immediately? 
-      // Saving immediately is safer for consistency.
-
-      this.photoService.saveLocations([...currentLocs, newLocation]).subscribe(() => {
-        // Success
-        this.messageService.add({ severity: 'info', summary: 'Location Created', detail: 'New location created from map selection' });
+          // Link photo to new location
+          if (photoId) {
+            if (this.clonedPhotos[photoId]) {
+              this.clonedPhotos[photoId].locationId = location.id;
+              // photo.isReuseLocation is deprecated/derived, but if we need it:
+              // this.clonedPhotos[photoId].isReuseLocation = location.isReuseLocation; 
+            }
+            const photos = this.editablePhotos();
+            const photo = photos.find(p => p.id === photoId);
+            if (photo) {
+              const updatedPhoto = { ...photo, locationId: location.id };
+              this.updatePhotoInList(updatedPhoto);
+            }
+          }
+        }
       });
+    } else if (mode === 'update') {
+      // Update existing location
+      const currentLocs = this.locations();
+      const updatedLocs = currentLocs.map(l => l.id === location.id ? location : l);
 
-      // Update cloned/main photo
-      if (this.clonedPhotos[photoId]) {
-        this.clonedPhotos[photoId].locationId = newLocationId;
-      }
-
-      const photos = this.editablePhotos();
-      const photo = photos.find(p => p.id === photoId);
-      if (photo) {
-        const updatedPhoto = { ...photo, locationId: newLocationId };
-        this.updatePhotoInList(updatedPhoto);
-      }
+      this.photoService.saveLocations(updatedLocs).subscribe(success => {
+        if (success) {
+          this.messageService.add({ severity: 'success', summary: 'Location Updated', detail: 'Shared location updated' });
+          // Photo link remains same (locationId unchanged)
+        }
+      });
     }
+
     this.isMapSelectorVisible.set(false);
   }
 

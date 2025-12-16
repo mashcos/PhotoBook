@@ -1,0 +1,50 @@
+<div class="flex flex-column gap-3 mb-3">
+  <!-- Location Name and Search -->
+  <div class="flex gap-2">
+    <div class="flex-grow-1 p-float-label">
+      <input pInputText id="locationName" class="w-full" [ngModel]="locationName()"
+        (ngModelChange)="locationName.set($event)" />
+      <!-- <label for="locationName">Location Name</label> NOT USING FLOAT LABEL FOR SIMPLICITY -->
+    </div>
+    <p-button icon="pi pi-search" pTooltip="Search for location by name (Not implemented)" tooltipPosition="bottom"
+      (onClick)="onSearchLocation()" [disabled]="true"></p-button>
+  </div>
+
+  <!-- Map -->
+  <div class="map-container relative">
+    <div style="height: 400px; width: 100%" leaflet [leafletOptions]="mapOptions" [leafletCenter]="currentCenter"
+      [leafletZoom]="currentZoom" (leafletMapReady)="onMapReady($event)" (leafletClick)="onMapClick($event)">
+      @if (currentMarker(); as m) {
+      <div [leafletLayer]="m"></div>
+      }
+    </div>
+
+    <!-- Helper Search Button Overlay or nearby -->
+    <!-- Placing it outside for now for clarity -->
+  </div>
+
+  <div class="flex justify-content-between align-items-center">
+    <!-- Reusable Checkbox -->
+    <div class="field-checkbox mb-0">
+      <p-checkbox [binary]="true" inputId="isReusable" [ngModel]="isReuseLocation()"
+        (ngModelChange)="isReuseLocation.set($event)"></p-checkbox>
+      <label for="isReusable" class="ml-2">Reusable Location</label>
+    </div>
+
+    <!-- Geo Search Button -->
+    <p-button label="Name from Coords" icon="pi pi-map-marker" styleClass="p-button-sm p-button-outlined"
+      (onClick)="onSearchName()" [disabled]="true" pTooltip="Get name from coordinates (Not implemented)"></p-button>
+  </div>
+</div>
+
+<div class="actions flex justify-content-end gap-2 mt-3 pt-3 border-top-1 surface-border">
+  <p-button label="Cancel" icon="pi pi-times" severity="secondary" (onClick)="cancel.emit()"></p-button>
+
+  @if (originalLocationId) {
+  <p-button label="Update Location" icon="pi pi-check" severity="warn" [disabled]="!currentMarker()"
+    (onClick)="onSave('update')"></p-button>
+  }
+
+  <p-button label="Create Location" icon="pi pi-plus" [disabled]="!currentMarker()"
+    (onClick)="onSave('create')"></p-button>
+</div>
