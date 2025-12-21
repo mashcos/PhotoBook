@@ -1,0 +1,3 @@
+[submodule "MashcosLibrary"]
+	path = MashcosLibrary
+	url = git@github.com:mashcos/MashcosLibrary.git
