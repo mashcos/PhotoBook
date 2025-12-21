@@ -1,0 +1,6 @@
+@PhotoBookApi_HostAddress = http://localhost:5170
+
+GET {{PhotoBookApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
