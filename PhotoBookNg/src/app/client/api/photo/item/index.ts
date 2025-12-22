@@ -4,12 +4,18 @@
 // @ts-ignore
 import { createPhotoViewModelFromDiscriminatorValue, createProblemDetailsFromDiscriminatorValue, serializePhotoViewModel, type PhotoViewModel, type ProblemDetails } from '../../../models/index.js';
 // @ts-ignore
-import { type BaseRequestBuilder, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
+import { ImageRequestBuilderRequestsMetadata, type ImageRequestBuilder } from './image/index.js';
+// @ts-ignore
+import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
 
 /**
  * Builds and executes requests for operations under /api/Photo/{id}
  */
 export interface PhotoItemRequestBuilder extends BaseRequestBuilder<PhotoItemRequestBuilder> {
+    /**
+     * The image property
+     */
+    get image(): ImageRequestBuilder;
     /**
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<PhotoViewModel>}
@@ -39,6 +45,14 @@ export interface PhotoItemRequestBuilder extends BaseRequestBuilder<PhotoItemReq
  * Uri template for the request builder.
  */
 export const PhotoItemRequestBuilderUriTemplate = "{+baseurl}/api/Photo/{id}";
+/**
+ * Metadata for all the navigation properties in the request builder.
+ */
+export const PhotoItemRequestBuilderNavigationMetadata: Record<Exclude<keyof PhotoItemRequestBuilder, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
+    image: {
+        requestsMetadata: ImageRequestBuilderRequestsMetadata,
+    },
+};
 /**
  * Metadata for all the requests in the request builder.
  */
