@@ -46,17 +46,17 @@ namespace PhotoBookApi.Services
                 query = query.Where(x => x.Persons.Any(p => p.Id == request.PersonId));
             }
 
-            if (request.DateFrom.HasValue)
+            if (request.TakenFromDate.HasValue)
             {
-                query = query.Where(x => x.Date >= request.DateFrom.Value);
+                query = query.Where(x => x.TakenOn >= request.TakenFromDate.Value);
             }
 
-            if (request.DateTo.HasValue)
+            if (request.TakenToData.HasValue)
             {
-                query = query.Where(x => x.Date <= request.DateTo.Value);
+                query = query.Where(x => x.TakenOn <= request.TakenToData.Value);
             }
 
-            query = query.OrderByDescending(x => x.Date);
+            query = query.OrderByDescending(x => x.TakenOn);
 
             return await query.Select(x => new PhotoSummary(x)).ToListAsync();
         }
@@ -65,7 +65,7 @@ namespace PhotoBookApi.Services
         {
             var directory = _config["ImageFolder"];
             var image = await _context.Photos.FindAsync(id);
-            var filename = image?.Source;
+            var filename = image?.Filename;
 
             if ((image == null) || (directory == null) || (filename == null))
             {

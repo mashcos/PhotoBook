@@ -7,7 +7,7 @@ namespace PhotoBookApi.Summaries
     {
         public string? Source { get; set; }
         public string? Title { get; set; }
-        public DateTime? Date { get; set; }
+        public DateTime? TakenOn { get; set; }
 
         public PhotoSummary() : base() { }
         public PhotoSummary(Photo entity) : base(entity) { }
@@ -15,9 +15,9 @@ namespace PhotoBookApi.Summaries
         public override void Read(Photo entity)
         {
             base.Read(entity);
-            Source = entity.Source;
+            Source = entity.Filename;
             Title = entity.Title;
-            Date = entity.Date;
+            TakenOn = entity.TakenOn;
         }
     }
 }

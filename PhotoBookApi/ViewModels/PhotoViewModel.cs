@@ -10,7 +10,7 @@ namespace PhotoBookApi.ViewModels
         public string? Title { get; set; }
         public string? Description { get; set; }
         public Guid? LocationId { get; set; }
-        public DateTime? Date { get; set; }
+        public DateTime? TakenOn { get; set; }
         
         public LocationSummary? Location { get; set; }
         public List<PersonSummary> Persons { get; set; } = new();
@@ -22,11 +22,11 @@ namespace PhotoBookApi.ViewModels
         public override void Read(Photo entity)
         {
             base.Read(entity);
-            Source = entity.Source;
+            Source = entity.Filename;
             Title = entity.Title;
             Description = entity.Description;
             LocationId = entity.LocationId;
-            Date = entity.Date;
+            TakenOn = entity.TakenOn;
 
             if (entity.Location != null)
             {
@@ -40,11 +40,11 @@ namespace PhotoBookApi.ViewModels
         public override void Write(Photo entity)
         {
             base.Write(entity);
-            entity.Source = Source;
+            entity.Filename = Source;
             entity.Title = Title;
             entity.Description = Description;
             entity.LocationId = LocationId;
-            entity.Date = Date;
+            entity.TakenOn = TakenOn;
         }
     }
 }

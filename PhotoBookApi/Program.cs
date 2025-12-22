@@ -2,6 +2,7 @@
 using MashcosLibNet.Services;
 using Microsoft.AspNetCore.Http.Json;
 using PhotoBookApi.Data;
+using PhotoBookApi.ImportExport;
 using PhotoBookApi.Services;
 using System.Text.Json.Serialization;
 
@@ -27,13 +28,25 @@ namespace PhotoBookApi
             builder.Services.AddScoped<PersonService>();
             builder.Services.AddScoped<PhotoService>();
 
+            builder.Services.AddControllers();
+
             var app = builder.Build();
+
+            // this seeding is only for the template to bootstrap the DB and users.
+            // in production you will likely want a different approach.
+            if (args.Contains("/seed"))
+            {
+                LocalDataService.EnsureSeedData(app);
+                return;
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
             }
+
+            app.UseRouting();
 
             app.UseHttpsRedirection();
 

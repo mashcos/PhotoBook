@@ -17,5 +17,24 @@ namespace PhotoBookApi.Data
         public PhotoBookContext(ICurrentUserService? currentUserService = null) : base(currentUserService)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Category>().HasKey(x => x.Id);
+            modelBuilder.Entity<Location>().HasKey(x => x.Id);
+            modelBuilder.Entity<Person>().HasKey(x => x.Id);
+            modelBuilder.Entity<Photo>().HasKey(x => x.Id);
+            modelBuilder.Entity<Photo>().HasIndex(p => p.TakenOn);
+            modelBuilder.Entity<Photo>()
+                .HasOne(x => x.Location)
+                .WithMany();
+            modelBuilder.Entity<Photo>()
+                .HasMany(x => x.Persons)
+                .WithMany();
+            modelBuilder.Entity<Photo>()
+                .HasMany(x => x.Categories)
+                .WithMany();
+        }
     }
 }
