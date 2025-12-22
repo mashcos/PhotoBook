@@ -2,7 +2,6 @@ import { AuthenticationProvider, RequestInformation } from '@microsoft/kiota-abs
 import { TenantService } from './tenant.service';
 
 export class TenantAuthenticationProvider implements AuthenticationProvider {
-  // Wir injizieren den TenantService
   constructor(private tenantService: TenantService) {}
 
   public authenticateRequest(request: RequestInformation): Promise<void> {

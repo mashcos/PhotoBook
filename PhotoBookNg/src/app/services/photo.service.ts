@@ -1,9 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Inject, inject } from '@angular/core';
 import { Observable, map, of, shareReplay, catchError, from } from 'rxjs';
-import { Photo, Category, Location } from '../models/models';
-import { PhotoBookClient } from '../client/photoBookClient';
-import { PHOTO_BOOK_CLIENT } from '../app.config';
+import { createPhotoBookClient, PhotoBookClient } from '../client/photoBookClient';
 import { CategoryRequest, CategorySummary, CategoryViewModel, LocationRequest, LocationSummary, PhotoRequest, PhotoSummary, PhotoViewModel } from '../client/models';
+import { TenantService } from './tenant.service';
+import { TenantAuthenticationProvider } from './tenant-auth-provider';
+import { FetchRequestAdapter } from '@microsoft/kiota-http-fetchlibrary';
 
 /**
  * PhotoService handles loading data via API
@@ -12,7 +13,18 @@ import { CategoryRequest, CategorySummary, CategoryViewModel, LocationRequest, L
   providedIn: 'root',
 })
 export class PhotoService {
-  private client = inject<PhotoBookClient>(PHOTO_BOOK_CLIENT);
+  protected tenantService = inject(TenantService);
+  private client : PhotoBookClient;
+
+  constructor() {
+    const authProvider = new TenantAuthenticationProvider(this.tenantService);
+    const adapter = new FetchRequestAdapter(authProvider);
+
+    // Use relative API base so the dev-server proxy forwards to backend
+    adapter.baseUrl = '';
+
+    this.client = createPhotoBookClient(adapter);
+  }
 
   getPhotos(): Observable<PhotoSummary[]> {
     const request: PhotoRequest = {};

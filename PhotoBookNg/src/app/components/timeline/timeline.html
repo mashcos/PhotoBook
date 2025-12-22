@@ -9,7 +9,7 @@
       <div class="block md:hidden mb-3 font-bold text-orange-500">{{ event.formattedDate }}</div>
       @for (photo of event.photos; track photo.id) {
       <p-card [header]="photo.title" class="timeline-card mb-4 block">
-        <div class="photo-preview" [routerLink]="['/hub', photo.id]">
+        <div class="photo-preview" [routerLink]="photoLink(photo.id)">
           <img [src]="photo.filename! | imageSource" [alt]="photo.title" />
           <div class="hover-overlay">
             <i class="pi pi-eye"></i>
@@ -23,7 +23,7 @@
         </div>
         }
         <ng-template pTemplate="footer">
-          <p-button label="View Details" [routerLink]="['/hub', photo.id]" [text]="true" icon="pi pi-arrow-right"
+          <p-button label="View Details" [routerLink]="photoLink(photo.id)" [text]="true" icon="pi pi-arrow-right"
             iconPos="right"></p-button>
         </ng-template>
       </p-card>

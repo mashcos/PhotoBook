@@ -10,7 +10,6 @@
     },
     "https": {
       "commandName": "Project",
-      "commandLineArgs": "/seed",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

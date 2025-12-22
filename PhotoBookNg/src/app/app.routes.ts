@@ -4,7 +4,7 @@ import { TenantService } from './services/tenant.service';
 
 const tenantGuard = (route: ActivatedRouteSnapshot) => {
   const tenantId = route.paramMap.get('tenantId');
-  if (tenantId) {
+  if (tenantId && tenantId.length > 16) {
     inject(TenantService).setTenant(tenantId);
   }
   return true;
@@ -50,5 +50,10 @@ export const routes: Routes = [
         redirectTo: '',
       },
     ],
+  },
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./components/intro/intro').then((m) => m.Intro),
   },
 ];

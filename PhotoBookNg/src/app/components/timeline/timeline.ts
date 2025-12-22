@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, OnInit, Signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TimelineModule } from 'primeng/timeline';
@@ -7,6 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { PhotoService } from '../../services/photo.service';
 import { LocationSummary, PhotoSummary } from '../../client/models';
 import { ImageSourcePipe } from '../../pipes/image-source.pipe';
+import { TenantService } from '../../services/tenant.service';
 
 interface TimelineEvent {
   date: string;
@@ -21,7 +22,8 @@ interface TimelineEvent {
   styleUrl: './timeline.scss',
 })
 export class Timeline {
-  private readonly photoService = inject(PhotoService);
+  protected tenantService = inject(TenantService);
+  protected photoService = inject(PhotoService);
 
   protected readonly photos = toSignal(this.photoService.getPhotos(), {
     initialValue: [] as PhotoSummary[],
@@ -54,11 +56,16 @@ export class Timeline {
         return {
           date: representativeDate.toISOString(),
           formattedDate: this.formatDate(representativeDate),
-          photos: groupPhotos
+          photos: groupPhotos,
         };
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
+
+  photoLink(photoId: string): string {
+    const link = "/"  + this.tenantService.currentTenant() + "/hub/" + photoId;
+    return link;
+  }
 
   protected formatDate(date: Date): string {
     return date.toLocaleDateString('en-US', {
