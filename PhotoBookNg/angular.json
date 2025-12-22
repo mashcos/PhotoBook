@@ -46,10 +46,7 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "allowedCommonJsDependencies": [
-              "leaflet",
-              "exif-js"
-            ],
+            "allowedCommonJsDependencies": ["leaflet", "exif-js"],
             "assets": [
               {
                 "glob": "**/*",
@@ -94,6 +91,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "src/proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "photo-book:build:production"

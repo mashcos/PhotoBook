@@ -1,12 +1,15 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, inject, InjectionToken, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeuix/themes';
-import Aura from '@primeuix/themes/aura';
-
+import { FetchRequestAdapter } from '@microsoft/kiota-http-fetchlibrary';
 import { routes } from './app.routes';
+import { TenantService } from './services/tenant.service';
+import { TenantAuthenticationProvider } from './services/tenant-auth-provider';
+import { createPhotoBookClient, PhotoBookClient } from './client/photoBookClient';
+import Aura from '@primeuix/themes/aura';
 
 // Custom theme with warm Amber/Orange colors for "Summer in Germany" vibe
 const SummerTheme = definePreset(Aura, {
@@ -27,6 +30,19 @@ const SummerTheme = definePreset(Aura, {
   },
 });
 
+export const PHOTO_BOOK_CLIENT = new InjectionToken<PhotoBookClient>('PhotoBookClient');
+
+export function photoBookClientFactory(): PhotoBookClient {
+  const tenantService = inject(TenantService);
+  const authProvider = new TenantAuthenticationProvider(tenantService);
+  const adapter = new FetchRequestAdapter(authProvider);
+  
+  // Base URL setzen
+  adapter.baseUrl = '/'; 
+
+  return createPhotoBookClient(adapter);
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -41,5 +57,6 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
+    { provide: PHOTO_BOOK_CLIENT, useFactory: photoBookClientFactory },
   ],
 };
