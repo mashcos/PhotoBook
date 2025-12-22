@@ -57,3 +57,4 @@ nunit-*.xml
 /.vs
 
 *.user
+PhotoBookNg/src/app/client/.kiota.log

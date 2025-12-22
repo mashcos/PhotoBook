@@ -1,5 +1,6 @@
 using MashcosLibNet.ViewModels;
 using PhotoBookApi.Models;
+using System.Text.Json.Serialization;
 
 namespace PhotoBookApi.ViewModels
 {

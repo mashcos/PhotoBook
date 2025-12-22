@@ -1,4 +1,10 @@
 
+using MashcosLibNet.Services;
+using Microsoft.AspNetCore.Http.Json;
+using PhotoBookApi.Data;
+using PhotoBookApi.Services;
+using System.Text.Json.Serialization;
+
 namespace PhotoBookApi
 {
     public class Program
@@ -13,12 +19,13 @@ namespace PhotoBookApi
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
-            builder.Services.AddDbContext<PhotoBookApi.Data.PhotoBookContext>();
-            builder.Services.AddScoped<MashcosLibNet.Services.ICurrentUserService, PhotoBookApi.Services.CurrentUserService>();
-            builder.Services.AddScoped<PhotoBookApi.Services.CategoryService>();
-            builder.Services.AddScoped<PhotoBookApi.Services.LocationService>();
-            builder.Services.AddScoped<PhotoBookApi.Services.PersonService>();
-            builder.Services.AddScoped<PhotoBookApi.Services.PhotoService>();
+            builder.Services.Configure<JsonOptions>(o => o.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
+            builder.Services.AddDbContext<PhotoBookContext>();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+            builder.Services.AddScoped<CategoryService>();
+            builder.Services.AddScoped<LocationService>();
+            builder.Services.AddScoped<PersonService>();
+            builder.Services.AddScoped<PhotoService>();
 
             var app = builder.Build();
 
