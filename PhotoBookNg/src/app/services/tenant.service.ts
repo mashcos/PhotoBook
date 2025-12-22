@@ -8,6 +8,6 @@ export class TenantService {
   public readonly currentTenant = this._currentTenant.asReadonly();
 
   setTenant(tenantId: string) {
-    this._currentTenant.set(tenantId);
+    this._currentTenant.set(tenantId.toLowerCase());
   }
 }

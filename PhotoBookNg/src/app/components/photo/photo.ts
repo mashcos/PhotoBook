@@ -6,18 +6,20 @@ import { ChipModule } from 'primeng/chip';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { PhotoService } from '../../services/photo.service';
+import { TenantService } from '../../services/tenant.service';
 import { LocationSummary } from '../../client/models';
 import { ImageSourcePipe } from '../../pipes/image-source.pipe';
 
 @Component({
-  selector: 'app-hub',
+  selector: 'app-photo',
   imports: [RouterLink, ChipModule, ButtonModule, CardModule, ImageSourcePipe],
-  templateUrl: './hub.html',
-  styleUrl: './hub.scss',
+  templateUrl: './photo.html',
+  styleUrl: './photo.scss',
 })
-export class Hub {
+export class Photo {
   private readonly route = inject(ActivatedRoute);
   private readonly photoService = inject(PhotoService);
+  protected readonly tenantService = inject(TenantService);
 
   protected readonly photo = toSignal(
     this.route.paramMap.pipe(

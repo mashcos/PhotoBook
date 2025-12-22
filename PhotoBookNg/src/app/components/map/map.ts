@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import { latLng, tileLayer, MapOptions, marker, Marker, icon, Icon } from 'leaflet';
 import { PhotoService } from '../../services/photo.service';
+import { TenantService } from '../../services/tenant.service';
 import { Photo, Location } from '../../models/models';
 import { LocationSummary, PhotoSummary } from '../../client/models';
 
@@ -23,6 +24,7 @@ Icon.Default.mergeOptions({
 export class MapComponent implements OnInit, OnDestroy {
   private readonly photoService = inject(PhotoService);
   private readonly router = inject(Router);
+  private readonly tenantService = inject(TenantService);
   private navigationHandler?: EventListener;
 
   protected readonly photos = toSignal(this.photoService.getPhotos(), {
@@ -58,7 +60,7 @@ export class MapComponent implements OnInit, OnDestroy {
       const photoId = event.detail;
       // Validate photoId is a safe string before navigating
       if (typeof photoId === 'string' && /^[\w-]+$/.test(photoId)) {
-        this.router.navigate(['/hub', photoId]);
+        this.router.navigate(['/', this.tenantService.currentTenant(), 'photo', photoId]);
       }
     }) as EventListener;
     window.addEventListener('navigateToPhoto', this.navigationHandler);

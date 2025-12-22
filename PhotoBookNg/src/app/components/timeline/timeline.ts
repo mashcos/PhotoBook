@@ -63,7 +63,7 @@ export class Timeline {
   });
 
   photoLink(photoId: string): string {
-    const link = "/"  + this.tenantService.currentTenant() + "/hub/" + photoId;
+    const link = "/"  + this.tenantService.currentTenant() + "/photo/" + photoId;
     return link;
   }
 

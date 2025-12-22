@@ -5,6 +5,7 @@ import { switchMap, map } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { PhotoService } from '../../services/photo.service';
+import { TenantService } from '../../services/tenant.service';
 import { CategorySummary, LocationSummary, PhotoSummary } from '../../client/models';
 import { LocationSummaryNamePipe } from '../../pipes/location-name.pipe';
 import { ImageSourcePipe } from '../../pipes/image-source.pipe';
@@ -18,6 +19,7 @@ import { ImageSourcePipe } from '../../pipes/image-source.pipe';
 export class CategoryComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly photoService = inject(PhotoService);
+  protected readonly tenantService = inject(TenantService);
 
   protected readonly categoryId = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('id') || ''))

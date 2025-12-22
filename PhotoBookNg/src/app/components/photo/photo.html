@@ -1,4 +1,4 @@
-<div class="hub-container">
+<div class="photo-container">
   @if (photo(); as p) {
   <div class="photo-detail">
     <!-- Photo Image -->
@@ -31,15 +31,15 @@
 
     <!-- Navigation -->
     <div class="nav-buttons">
-      <p-button label="Back to Timeline" icon="pi pi-arrow-left" routerLink="/timeline" [outlined]="true"></p-button>
-      <p-button label="View on Map" icon="pi pi-map" routerLink="/map" severity="secondary"></p-button>
+      <p-button label="Back to Timeline" icon="pi pi-arrow-left" [routerLink]="['/', tenantService.currentTenant(), 'timeline']" [outlined]="true"></p-button>
+      <p-button label="View on Map" icon="pi pi-map" [routerLink]="['/', tenantService.currentTenant(), 'map']" severity="secondary"></p-button>
     </div>
   </div>
   } @else {
   <p-card header="Photo Not Found">
     <p>The requested photo could not be found.</p>
     <ng-template pTemplate="footer">
-      <p-button label="Go to Timeline" routerLink="/timeline"></p-button>
+      <p-button label="Go to Timeline" [routerLink]="['/', tenantService.currentTenant(), 'timeline']"></p-button>
     </ng-template>
   </p-card>
   }

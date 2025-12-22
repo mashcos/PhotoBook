@@ -25,8 +25,8 @@ export const routes: Routes = [
         loadComponent: () => import('./components/home/home').then((m) => m.Home),
       },
       {
-        path: 'hub/:id',
-        loadComponent: () => import('./components/hub/hub').then((m) => m.Hub),
+        path: 'photo/:id',
+        loadComponent: () => import('./components/photo/photo').then((m) => m.Photo),
       },
       {
         path: 'timeline',

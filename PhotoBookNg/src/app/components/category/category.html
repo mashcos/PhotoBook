@@ -18,7 +18,7 @@
     @for (cat of categories(); track cat.id) {
     <p-tag [value]="cat.categoryName ?? undefined"
       [style]="{'background-color': categoryId() === cat.id ? cat.color : '#e0e0e0', 'color': categoryId() === cat.id ? 'white' : '#616161', 'cursor': 'pointer'}"
-      [routerLink]="['/category', cat.id]"></p-tag>
+      [routerLink]="['/', tenantService.currentTenant(), 'category', cat.id]"></p-tag>
     }
   </div>
 
@@ -26,7 +26,7 @@
   <div class="grid photo-grid">
     @for (photo of photos(); track photo.id) {
     <div class="col-12 sm:col-6 md:col-4 lg:col-3">
-      <div class="photo-card" [routerLink]="['/hub', photo.id]">
+      <div class="photo-card" [routerLink]="['/', tenantService.currentTenant(), 'photo', photo.id]">
         <div class="photo-image">
           <img [src]="photo.filename! | imageSource" [alt]="photo.title" />
           <!--@if (photo.isPrivacyProtected) { // TODO
