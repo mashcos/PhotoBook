@@ -5,6 +5,7 @@ import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import { latLng, tileLayer, MapOptions, marker, Marker, icon, Icon } from 'leaflet';
 import { PhotoService } from '../../services/photo.service';
 import { Photo, Location } from '../../models/models';
+import { LocationSummary, PhotoSummary } from '../../client/models';
 
 // Fix for default marker icons in Leaflet
 Icon.Default.mergeOptions({
@@ -25,11 +26,11 @@ export class MapComponent implements OnInit, OnDestroy {
   private navigationHandler?: EventListener;
 
   protected readonly photos = toSignal(this.photoService.getPhotos(), {
-    initialValue: [] as Photo[],
+    initialValue: [] as PhotoSummary[],
   });
 
   protected readonly locations = toSignal(this.photoService.getLocations(), {
-    initialValue: [] as Location[],
+    initialValue: [] as LocationSummary[],
   });
 
   protected readonly markers = signal<Marker[]>([]);
@@ -81,14 +82,15 @@ export class MapComponent implements OnInit, OnDestroy {
       if (!photo.locationId) continue;
 
       const loc = this.locations().find((l) => l.id === photo.locationId);
-      if (!loc || (loc.lat === 0 && loc.lng === 0)) continue;
+      const lat = loc?.latitude ?? 0;
+      const lng = loc?.longitude ?? 0;
 
-      const lat = loc.lat;
-      const lng = loc.lng;
-      const name = loc.name;
+      if (lat === 0 && lng === 0) continue;
+
+      const name = loc!.locationName;
 
       const m = marker([lat, lng], {
-        title: photo.title,
+        title: photo.title ?? undefined,
         icon: icon({
           iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
           iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -100,9 +102,9 @@ export class MapComponent implements OnInit, OnDestroy {
         }),
       });
 
-      const safeId = this.escapeHtml(photo.id);
-      const safeTitle = this.escapeHtml(photo.title);
-      const safeLocation = this.escapeHtml(name);
+      const safeId = this.escapeHtml(photo.id!);
+      const safeTitle = this.escapeHtml(photo.title ?? "");
+      const safeLocation = this.escapeHtml(name ?? "");
 
       m.bindPopup(`
           <div style="text-align: center; min-width: 150px;">

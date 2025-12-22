@@ -6,7 +6,7 @@
       <i [class]="cat.icon"></i>
     </div>
     <div class="category-info">
-      <h1 class="category-title">{{ cat.label }}</h1>
+      <h1 class="category-title">{{ cat.categoryName }}</h1>
       <p class="category-description">{{ cat.description }}</p>
     </div>
   </div>
@@ -16,7 +16,7 @@
   <div class="category-nav">
     <span class="nav-label">Categories:</span>
     @for (cat of categories(); track cat.id) {
-    <p-tag [value]="cat.label"
+    <p-tag [value]="cat.categoryName ?? undefined"
       [style]="{'background-color': categoryId() === cat.id ? cat.color : '#e0e0e0', 'color': categoryId() === cat.id ? 'white' : '#616161', 'cursor': 'pointer'}"
       [routerLink]="['/category', cat.id]"></p-tag>
     }
@@ -28,24 +28,24 @@
     <div class="col-12 sm:col-6 md:col-4 lg:col-3">
       <div class="photo-card" [routerLink]="['/hub', photo.id]">
         <div class="photo-image">
-          <img [src]="photo.src" [alt]="photo.title" />
-          @if (photo.isPrivacyProtected) {
+          <img [src]="photo.filename! | imageSource" [alt]="photo.title" />
+          <!--@if (photo.isPrivacyProtected) { // TODO
           <div class="privacy-indicator">
             <i class="pi pi-lock"></i>
           </div>
-          }
+        }-->
         </div>
         <div class="photo-details">
           <h3 class="photo-title">{{ photo.title }}</h3>
           <div class="photo-meta">
             <span class="date">
               <i class="pi pi-calendar"></i>
-              {{ formatDate(photo.date) }}
+              {{ formatDate(photo.takenOn!) }}
             </span>
-            @if ((photo | locationName:locations())) {
+            @if (photo | locationSummaryName:locations()) {
             <span class="location">
               <i class="pi pi-map-marker"></i>
-              {{ photo | locationName:locations() }}
+              {{ photo | locationSummaryName:locations() }}
             </span>
             }
           </div>

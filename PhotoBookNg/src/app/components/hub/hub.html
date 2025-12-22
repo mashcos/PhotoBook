@@ -3,12 +3,12 @@
   <div class="photo-detail">
     <!-- Photo Image -->
     <div class="photo-image-wrapper">
-      <img [src]="p.src" [alt]="p.title" class="photo-image" />
-      @if (p.isPrivacyProtected) {
+      <img [src]="p.filename! | imageSource" [alt]="p.title" class="photo-image" />
+      <!-- @if (p.isPrivacyProtected) { // TODDO
       <div class="privacy-badge">
         <i class="pi pi-lock"></i>
       </div>
-      }
+    } -->
     </div>
 
     <!-- Photo Info -->
@@ -18,12 +18,12 @@
 
       <!-- Social Media Style Chips -->
       <div class="chip-container">
-        <p-chip [label]="formatDate(p.date)" icon="pi pi-calendar" class="chip-date"></p-chip>
-        @if ((p | locationName:locations())) {
-        <p-chip [label]="(p | locationName:locations())" icon="pi pi-map-marker" class="chip-location"></p-chip>
+        <p-chip [label]="formatDate(p.takenOn!)" icon="pi pi-calendar" class="chip-date"></p-chip>
+        @if (locationName()) {
+        <p-chip [label]="locationName()" icon="pi pi-map-marker" class="chip-location"></p-chip>
         }
-        @for (cat of photoCategories(); track cat.id) {
-        <p-chip [label]="cat.label" [icon]="cat.icon"
+        @for (cat of p.categories; track cat.id) {
+        <p-chip [label]="cat.categoryName ?? undefined" [icon]="cat.icon ?? undefined"
           [style]="{'background-color': cat.color, 'color': 'white'}"></p-chip>
         }
       </div>

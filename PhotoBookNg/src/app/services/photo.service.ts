@@ -1,109 +1,79 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, shareReplay, catchError } from 'rxjs';
+import { Observable, map, of, shareReplay, catchError, from } from 'rxjs';
 import { Photo, Category, Location } from '../models/models';
-import { DataProvider } from './data-provider.interface';
+import { PhotoBookClient } from '../client/photoBookClient';
+import { PHOTO_BOOK_CLIENT } from '../app.config';
+import { CategoryRequest, CategorySummary, CategoryViewModel, LocationRequest, LocationSummary, PhotoRequest, PhotoSummary, PhotoViewModel } from '../client/models';
 
 /**
- * PhotoService handles loading photos.json and categories.json via HTTP
- * Implements DataProvider interface for server mode
+ * PhotoService handles loading data via API
  */
 @Injectable({
   providedIn: 'root',
 })
-export class PhotoService implements DataProvider {
-  private readonly http = inject(HttpClient);
+export class PhotoService {
+  private client = inject<PhotoBookClient>(PHOTO_BOOK_CLIENT);
 
-  private readonly photosUrl = 'assets/local/photos.json';
-  private readonly categoriesUrl = 'assets/local/categories.json';
-
-  // Cache the observables for reuse
-  private photos$?: Observable<Photo[]>;
-  private categories$?: Observable<Category[]>;
-
-  /**
-   * Load all photos from the JSON file
-   */
-  getPhotos(): Observable<Photo[]> {
-    if (!this.photos$) {
-      this.photos$ = this.http.get<Photo[]>(this.photosUrl).pipe(
-        shareReplay(1),
-        catchError(() => of([]))
-      );
-    }
-    return this.photos$;
+  getPhotos(): Observable<PhotoSummary[]> {
+    const request: PhotoRequest = {};
+    const photos$ = from(this.client.api.photo.request.post(request)).pipe(
+      map((photos) => photos ?? []),
+      shareReplay(1),
+      catchError(() => of([]))
+    );
+    return photos$;
   }
 
-  /**
-   * Load all categories from the JSON file
-   */
-  getCategories(): Observable<Category[]> {
-    if (!this.categories$) {
-      this.categories$ = this.http.get<Category[]>(this.categoriesUrl).pipe(
-        shareReplay(1),
-        catchError(() => of([]))
-      );
-    }
-    return this.categories$;
+  getCategories(): Observable<CategorySummary[]> {
+    const request: CategoryRequest = {};
+    const categories$ = from(this.client.api.category.request.post(request)).pipe(
+      map((categories) => categories ?? []),
+      shareReplay(1),
+      catchError(() => of([]))
+    );
+    return categories$;
+  }
+
+  getLocations(): Observable<LocationSummary[]> {
+    const request: LocationRequest = {};
+    const locations$ = from(this.client.api.location.request.post(request)).pipe(
+      map((locations) => locations ?? []),
+      shareReplay(1),
+      catchError(() => of([]))
+    );
+    return locations$;
   }
 
   /**
    * Get a single photo by ID
    */
-  getPhotoById(id: string): Observable<Photo | undefined> {
-    return this.getPhotos().pipe(map((photos) => photos.find((p) => p.id === id)));
+  getPhotoById(id: string): Observable<PhotoViewModel | undefined> {
+    return from(this.client.api.photo.byId(id).get());
   }
 
   /**
    * Get photos by category ID
    */
-  getPhotosByCategory(categoryId: string): Observable<Photo[]> {
-    return this.getPhotos().pipe(
-      map((photos) => photos.filter((p) => p.categoryIds.includes(categoryId)))
+  getPhotosByCategory(categoryId: string): Observable<PhotoSummary[]> {
+    const request: PhotoRequest = {
+      categoryId: categoryId,
+    };
+    const photos$ = from(this.client.api.photo.request.post(request)).pipe(
+      map((photos) => photos ?? []),
+      shareReplay(1),
+      catchError(() => of([]))
     );
+    return photos$;
   }
 
   /**
-   * Save photos - not implemented for HTTP mode
+   * Get a single photo by ID
    */
-  savePhotos(_photos: Photo[]): Observable<boolean> {
-    console.warn('PhotoService: savePhotos is not supported in HTTP mode');
-    return of(false);
+  getCategoryById(id: string): Observable<CategoryViewModel | undefined> {
+    return from(this.client.api.category.byId(id).get());
   }
 
-  /**
-   * Save categories - not implemented for HTTP mode
-   */
-  saveCategories(_categories: Category[]): Observable<boolean> {
-    console.warn('PhotoService: saveCategories is not supported in HTTP mode');
-    return of(false);
-  }
-
-  /**
-   * Clear the cache to force reload
-   */
-  clearCache(): void {
-    this.photos$ = undefined;
-    this.categories$ = undefined;
-    this.locations$ = undefined;
-  }
-
-  // --- Locations ---
-  private readonly locationsUrl = 'assets/local/locations.json';
-  private locations$?: Observable<Location[]>;
-
-  getLocations(): Observable<Location[]> {
-    if (!this.locations$) {
-      this.locations$ = this.http.get<Location[]>(this.locationsUrl).pipe(
-        shareReplay(1),
-        catchError(() => of([]))
-      );
-    }
-    return this.locations$;
-  }
-
-  saveLocations(_locations: Location[]): Observable<boolean> {
-    console.warn('PhotoService: saveLocations is not supported in HTTP mode');
-    return of(false);
+  getLocationById(id: string): Observable<LocationSummary | undefined> {
+    return from(this.client.api.location.byId(id).get());
   }
 }

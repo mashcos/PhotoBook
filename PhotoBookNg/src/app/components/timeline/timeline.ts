@@ -5,18 +5,18 @@ import { TimelineModule } from 'primeng/timeline';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { PhotoService } from '../../services/photo.service';
-import { Photo, Location } from '../../models/models';
-import { LocationNamePipe } from '../../pipes/location-name.pipe';
+import { LocationSummary, PhotoSummary } from '../../client/models';
+import { ImageSourcePipe } from '../../pipes/image-source.pipe';
 
 interface TimelineEvent {
   date: string;
   formattedDate: string;
-  photos: Photo[];
+  photos: PhotoSummary[];
 }
 
 @Component({
   selector: 'app-timeline',
-  imports: [RouterLink, TimelineModule, CardModule, ButtonModule, LocationNamePipe],
+  imports: [RouterLink, TimelineModule, CardModule, ButtonModule, ImageSourcePipe],
   templateUrl: './timeline.html',
   styleUrl: './timeline.scss',
 })
@@ -24,20 +24,20 @@ export class Timeline {
   private readonly photoService = inject(PhotoService);
 
   protected readonly photos = toSignal(this.photoService.getPhotos(), {
-    initialValue: [] as Photo[],
+    initialValue: [] as PhotoSummary[],
   });
 
   protected readonly locations = toSignal(this.photoService.getLocations(), {
-    initialValue: [] as Location[],
+    initialValue: [] as LocationSummary[],
   });
 
   protected readonly groupedPhotos = computed<TimelineEvent[]>(() => {
     const photos = this.photos();
-    const groups = new Map<string, Photo[]>();
+    const groups = new Map<string, PhotoSummary[]>();
 
     // Group by Year and Month
     for (const photo of photos) {
-      const date = new Date(photo.date);
+      const date = photo.takenOn!;
       const dateKey = `${date.getFullYear()}-${date.getMonth()}`; // Key: "YYYY-MonthIndex"
 
       if (!groups.has(dateKey)) {
@@ -50,9 +50,9 @@ export class Timeline {
     return Array.from(groups.entries())
       .map(([_, groupPhotos]) => {
         // Use the date from the first photo as the representative date for sorting/formatting
-        const representativeDate = groupPhotos[0].date;
+        const representativeDate = groupPhotos[0].takenOn!;
         return {
-          date: representativeDate,
+          date: representativeDate.toISOString(),
           formattedDate: this.formatDate(representativeDate),
           photos: groupPhotos
         };
@@ -60,8 +60,8 @@ export class Timeline {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
-  protected formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+  protected formatDate(date: Date): string {
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
     });

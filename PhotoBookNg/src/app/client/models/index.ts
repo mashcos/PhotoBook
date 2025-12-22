@@ -277,7 +277,9 @@ export function deserializeIntoLocationRequest(locationRequest: Partial<Location
 export function deserializeIntoLocationSummary(locationSummary: Partial<LocationSummary> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "id": n => { locationSummary.id = n.getGuidValue(); },
+        "latitude": n => { locationSummary.latitude = n.getNumberValue(); },
         "locationName": n => { locationSummary.locationName = n.getStringValue(); },
+        "longitude": n => { locationSummary.longitude = n.getNumberValue(); },
         "tenantId": n => { locationSummary.tenantId = n.getGuidValue(); },
     }
 }
@@ -351,12 +353,12 @@ export function deserializeIntoPersonViewModel(personViewModel: Partial<PersonVi
 export function deserializeIntoPhotoRequest(photoRequest: Partial<PhotoRequest> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "categoryId": n => { photoRequest.categoryId = n.getGuidValue(); },
-        "dateFrom": n => { photoRequest.dateFrom = n.getDateValue(); },
-        "dateTo": n => { photoRequest.dateTo = n.getDateValue(); },
         "id": n => { photoRequest.id = n.getGuidValue(); },
         "locationId": n => { photoRequest.locationId = n.getGuidValue(); },
         "personId": n => { photoRequest.personId = n.getGuidValue(); },
         "searchText": n => { photoRequest.searchText = n.getStringValue(); },
+        "takenFromDate": n => { photoRequest.takenFromDate = n.getDateValue(); },
+        "takenToData": n => { photoRequest.takenToData = n.getDateValue(); },
         "tenantId": n => { photoRequest.tenantId = n.getGuidValue(); },
     }
 }
@@ -368,9 +370,10 @@ export function deserializeIntoPhotoRequest(photoRequest: Partial<PhotoRequest> 
 // @ts-ignore
 export function deserializeIntoPhotoSummary(photoSummary: Partial<PhotoSummary> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "date": n => { photoSummary.date = n.getDateValue(); },
+        "filename": n => { photoSummary.filename = n.getStringValue(); },
         "id": n => { photoSummary.id = n.getGuidValue(); },
-        "source": n => { photoSummary.source = n.getStringValue(); },
+        "locationId": n => { photoSummary.locationId = n.getGuidValue(); },
+        "takenOn": n => { photoSummary.takenOn = n.getDateValue(); },
         "tenantId": n => { photoSummary.tenantId = n.getGuidValue(); },
         "title": n => { photoSummary.title = n.getStringValue(); },
     }
@@ -384,14 +387,14 @@ export function deserializeIntoPhotoSummary(photoSummary: Partial<PhotoSummary> 
 export function deserializeIntoPhotoViewModel(photoViewModel: Partial<PhotoViewModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "categories": n => { photoViewModel.categories = n.getCollectionOfObjectValues<CategorySummary>(createCategorySummaryFromDiscriminatorValue); },
-        "date": n => { photoViewModel.date = n.getDateValue(); },
         "description": n => { photoViewModel.description = n.getStringValue(); },
         "disabled": n => { photoViewModel.disabled = n.getBooleanValue(); },
+        "filename": n => { photoViewModel.filename = n.getStringValue(); },
         "id": n => { photoViewModel.id = n.getGuidValue(); },
         "location": n => { photoViewModel.location = n.getObjectValue<LocationSummary>(createLocationSummaryFromDiscriminatorValue) ?? n.getObjectValue<PhotoViewModel_locationMember1>(createPhotoViewModel_locationMember1FromDiscriminatorValue); },
         "locationId": n => { photoViewModel.locationId = n.getGuidValue(); },
         "persons": n => { photoViewModel.persons = n.getCollectionOfObjectValues<PersonSummary>(createPersonSummaryFromDiscriminatorValue); },
-        "source": n => { photoViewModel.source = n.getStringValue(); },
+        "takenOn": n => { photoViewModel.takenOn = n.getDateValue(); },
         "tenantId": n => { photoViewModel.tenantId = n.getGuidValue(); },
         "title": n => { photoViewModel.title = n.getStringValue(); },
         "updatedAt": n => { photoViewModel.updatedAt = n.getDateValue(); },
@@ -454,9 +457,17 @@ export interface LocationSummary extends AdditionalDataHolder, Parsable {
      */
     id?: Guid | null;
     /**
+     * The latitude property
+     */
+    latitude?: number | null;
+    /**
      * The locationName property
      */
     locationName?: string | null;
+    /**
+     * The longitude property
+     */
+    longitude?: number | null;
     /**
      * The tenantId property
      */
@@ -560,14 +571,6 @@ export interface PhotoRequest extends AdditionalDataHolder, Parsable {
      */
     categoryId?: Guid | null;
     /**
-     * The dateFrom property
-     */
-    dateFrom?: Date | null;
-    /**
-     * The dateTo property
-     */
-    dateTo?: Date | null;
-    /**
      * The id property
      */
     id?: Guid | null;
@@ -584,23 +587,35 @@ export interface PhotoRequest extends AdditionalDataHolder, Parsable {
      */
     searchText?: string | null;
     /**
+     * The takenFromDate property
+     */
+    takenFromDate?: Date | null;
+    /**
+     * The takenToData property
+     */
+    takenToData?: Date | null;
+    /**
      * The tenantId property
      */
     tenantId?: Guid | null;
 }
 export interface PhotoSummary extends AdditionalDataHolder, Parsable {
     /**
-     * The date property
+     * The filename property
      */
-    date?: Date | null;
+    filename?: string | null;
     /**
      * The id property
      */
     id?: Guid | null;
     /**
-     * The source property
+     * The locationId property
      */
-    source?: string | null;
+    locationId?: Guid | null;
+    /**
+     * The takenOn property
+     */
+    takenOn?: Date | null;
     /**
      * The tenantId property
      */
@@ -616,10 +631,6 @@ export interface PhotoViewModel extends AdditionalDataHolder, Parsable {
      */
     categories?: CategorySummary[] | null;
     /**
-     * The date property
-     */
-    date?: Date | null;
-    /**
      * The description property
      */
     description?: string | null;
@@ -627,6 +638,10 @@ export interface PhotoViewModel extends AdditionalDataHolder, Parsable {
      * The disabled property
      */
     disabled?: boolean | null;
+    /**
+     * The filename property
+     */
+    filename?: string | null;
     /**
      * The id property
      */
@@ -644,9 +659,9 @@ export interface PhotoViewModel extends AdditionalDataHolder, Parsable {
      */
     persons?: PersonSummary[] | null;
     /**
-     * The source property
+     * The takenOn property
      */
-    source?: string | null;
+    takenOn?: Date | null;
     /**
      * The tenantId property
      */
@@ -758,7 +773,9 @@ export function serializeLocationRequest(writer: SerializationWriter, locationRe
 export function serializeLocationSummary(writer: SerializationWriter, locationSummary: Partial<LocationSummary> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!locationSummary || isSerializingDerivedType) { return; }
     writer.writeGuidValue("id", locationSummary.id);
+    writer.writeNumberValue("latitude", locationSummary.latitude);
     writer.writeStringValue("locationName", locationSummary.locationName);
+    writer.writeNumberValue("longitude", locationSummary.longitude);
     writer.writeGuidValue("tenantId", locationSummary.tenantId);
     writer.writeAdditionalData(locationSummary.additionalData);
 }
@@ -837,12 +854,12 @@ export function serializePersonViewModel(writer: SerializationWriter, personView
 export function serializePhotoRequest(writer: SerializationWriter, photoRequest: Partial<PhotoRequest> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!photoRequest || isSerializingDerivedType) { return; }
     writer.writeGuidValue("categoryId", photoRequest.categoryId);
-    writer.writeDateValue("dateFrom", photoRequest.dateFrom);
-    writer.writeDateValue("dateTo", photoRequest.dateTo);
     writer.writeGuidValue("id", photoRequest.id);
     writer.writeGuidValue("locationId", photoRequest.locationId);
     writer.writeGuidValue("personId", photoRequest.personId);
     writer.writeStringValue("searchText", photoRequest.searchText);
+    writer.writeDateValue("takenFromDate", photoRequest.takenFromDate);
+    writer.writeDateValue("takenToData", photoRequest.takenToData);
     writer.writeGuidValue("tenantId", photoRequest.tenantId);
     writer.writeAdditionalData(photoRequest.additionalData);
 }
@@ -855,9 +872,10 @@ export function serializePhotoRequest(writer: SerializationWriter, photoRequest:
 // @ts-ignore
 export function serializePhotoSummary(writer: SerializationWriter, photoSummary: Partial<PhotoSummary> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!photoSummary || isSerializingDerivedType) { return; }
-    writer.writeDateValue("date", photoSummary.date);
+    writer.writeStringValue("filename", photoSummary.filename);
     writer.writeGuidValue("id", photoSummary.id);
-    writer.writeStringValue("source", photoSummary.source);
+    writer.writeGuidValue("locationId", photoSummary.locationId);
+    writer.writeDateValue("takenOn", photoSummary.takenOn);
     writer.writeGuidValue("tenantId", photoSummary.tenantId);
     writer.writeStringValue("title", photoSummary.title);
     writer.writeAdditionalData(photoSummary.additionalData);
@@ -872,14 +890,14 @@ export function serializePhotoSummary(writer: SerializationWriter, photoSummary:
 export function serializePhotoViewModel(writer: SerializationWriter, photoViewModel: Partial<PhotoViewModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!photoViewModel || isSerializingDerivedType) { return; }
     writer.writeCollectionOfObjectValues<CategorySummary>("categories", photoViewModel.categories, serializeCategorySummary);
-    writer.writeDateValue("date", photoViewModel.date);
     writer.writeStringValue("description", photoViewModel.description);
     writer.writeBooleanValue("disabled", photoViewModel.disabled);
+    writer.writeStringValue("filename", photoViewModel.filename);
     writer.writeGuidValue("id", photoViewModel.id);
     writer.writeObjectValue<LocationSummary | PhotoViewModel_locationMember1>("location", photoViewModel.location, serializePhotoViewModel_location);
     writer.writeGuidValue("locationId", photoViewModel.locationId);
     writer.writeCollectionOfObjectValues<PersonSummary>("persons", photoViewModel.persons, serializePersonSummary);
-    writer.writeStringValue("source", photoViewModel.source);
+    writer.writeDateValue("takenOn", photoViewModel.takenOn);
     writer.writeGuidValue("tenantId", photoViewModel.tenantId);
     writer.writeStringValue("title", photoViewModel.title);
     writer.writeDateValue("updatedAt", photoViewModel.updatedAt);

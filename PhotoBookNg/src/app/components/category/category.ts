@@ -5,12 +5,13 @@ import { switchMap, map } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { PhotoService } from '../../services/photo.service';
-import { Photo, Category as CategoryModel, Location } from '../../models/models';
-import { LocationNamePipe } from '../../pipes/location-name.pipe';
+import { CategorySummary, LocationSummary, PhotoSummary } from '../../client/models';
+import { LocationSummaryNamePipe } from '../../pipes/location-name.pipe';
+import { ImageSourcePipe } from '../../pipes/image-source.pipe';
 
 @Component({
   selector: 'app-category',
-  imports: [RouterLink, ButtonModule, TagModule, LocationNamePipe],
+  imports: [RouterLink, ButtonModule, TagModule, LocationSummaryNamePipe, ImageSourcePipe],
   templateUrl: './category.html',
   styleUrl: './category.scss',
 })
@@ -26,9 +27,7 @@ export class CategoryComponent {
     this.route.paramMap.pipe(
       switchMap((params) => {
         const id = params.get('id') || '';
-        return this.photoService.getCategories().pipe(
-          map((categories) => categories.find((c) => c.id === id))
-        );
+        return this.photoService.getCategoryById(id).pipe();
       })
     )
   );
@@ -40,19 +39,19 @@ export class CategoryComponent {
         return this.photoService.getPhotosByCategory(id);
       })
     ),
-    { initialValue: [] as Photo[] }
+    { initialValue: [] as PhotoSummary[] }
   );
 
   protected readonly categories = toSignal(this.photoService.getCategories(), {
-    initialValue: [] as CategoryModel[],
+    initialValue: [] as CategorySummary[],
   });
 
   protected readonly locations = toSignal(this.photoService.getLocations(), {
-    initialValue: [] as Location[],
+    initialValue: [] as LocationSummary[],
   });
 
-  protected formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+  protected formatDate(date: Date): string {
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

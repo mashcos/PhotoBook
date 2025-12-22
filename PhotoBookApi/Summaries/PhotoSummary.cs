@@ -5,9 +5,10 @@ namespace PhotoBookApi.Summaries
 {
     public class PhotoSummary : MultitenantEntitySummary<Photo>
     {
-        public string? Source { get; set; }
+        public string? Filename { get; set; }
         public string? Title { get; set; }
         public DateTime? TakenOn { get; set; }
+        public Guid? LocationId { get; set; }
 
         public PhotoSummary() : base() { }
         public PhotoSummary(Photo entity) : base(entity) { }
@@ -15,9 +16,10 @@ namespace PhotoBookApi.Summaries
         public override void Read(Photo entity)
         {
             base.Read(entity);
-            Source = entity.Filename;
+            Filename = entity.Filename;
             Title = entity.Title;
             TakenOn = entity.TakenOn;
+            LocationId = entity.LocationId;
         }
     }
 }

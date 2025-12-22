@@ -6,7 +6,7 @@ namespace PhotoBookApi.ViewModels
 {
     public class PhotoViewModel : MultitenantEntityViewModel<Photo>
     {
-        public string? Source { get; set; }
+        public string? Filename { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
         public Guid? LocationId { get; set; }
@@ -22,7 +22,7 @@ namespace PhotoBookApi.ViewModels
         public override void Read(Photo entity)
         {
             base.Read(entity);
-            Source = entity.Filename;
+            Filename = entity.Filename;
             Title = entity.Title;
             Description = entity.Description;
             LocationId = entity.LocationId;
@@ -40,7 +40,7 @@ namespace PhotoBookApi.ViewModels
         public override void Write(Photo entity)
         {
             base.Write(entity);
-            entity.Filename = Source;
+            entity.Filename = Filename;
             entity.Title = Title;
             entity.Description = Description;
             entity.LocationId = LocationId;
