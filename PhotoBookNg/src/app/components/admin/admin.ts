@@ -16,12 +16,11 @@ import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
-import { LocalFileSystemService } from '../../services/local-file-system.service';
 
-
-import { Photo, Category, Location } from '../../models/models';
 import { MapSelectorComponent } from './map-selector/map-selector.component';
 import { LocationNamePipe } from '../../pipes/location-name.pipe';
+import { AdminService } from '../../services/admin.service';
+import { PhotoSummary, LocationSummary, CategorySummary } from '../../client/models';
 
 @Component({
   selector: 'app-admin',
@@ -50,33 +49,36 @@ import { LocationNamePipe } from '../../pipes/location-name.pipe';
   styleUrl: './admin.scss',
 })
 export class Admin {
-  private readonly photoService = inject(LocalFileSystemService);
+reusableLocations(): any[]|null|undefined {
+throw new Error('Method not implemented.');
+}
+  private readonly adminService = inject(AdminService);
   private readonly messageService = inject(MessageService);
 
-  protected readonly photos = toSignal(this.photoService.getPhotos(), {
-    initialValue: [] as Photo[],
+  protected readonly photos = toSignal(this.adminService.getPhotos(), {
+    initialValue: [] as PhotoSummary[],
   });
 
-  protected readonly categories = toSignal(this.photoService.getCategories(), {
-    initialValue: [] as Category[],
+  protected readonly categories = toSignal(this.adminService.getCategories(), {
+    initialValue: [] as CategorySummary[],
   });
 
-  protected readonly locations = toSignal(this.photoService.getLocations(), {
-    initialValue: [] as Location[],
+  protected readonly locations = toSignal(this.adminService.getLocations(), {
+    initialValue: [] as LocationSummary[],
   });
 
-  protected readonly reusableLocations = computed(() =>
+  /*protected readonly reusableLocations = computed(() =>
     this.locations().filter(l => l.isReuseLocation)
-  );
+  );*/
 
-  protected readonly editablePhotos = signal<Photo[]>([]);
+  protected readonly editablePhotos = signal<PhotoSummary[]>([]);
   protected readonly isLoading = signal(false);
-  protected readonly selectedPhotos = signal<Photo[]>([]);
+  protected readonly selectedPhotos = signal<PhotoSummary[]>([]);
 
   // Map Selector State
   protected readonly isMapSelectorVisible = signal(false);
   protected readonly currentEditingPhotoId = signal<string | null>(null);
-  protected readonly initialMapLocation = signal<Location | undefined>(undefined);
+  protected readonly initialMapLocation = signal<LocationSummary | undefined>(undefined);
 
   protected readonly hasUnsavedChanges = computed(() => {
     // This is a simplified check. Ideally we'd compare deep equality with original photos.
@@ -89,92 +91,32 @@ export class Admin {
 
   constructor() {
     // Initialize editable photos when photos load
-    this.photoService.getPhotos().subscribe((photos) => {
+    this.adminService.getPhotos().subscribe((photos) => {
       this.editablePhotos.set(photos.map((p) => ({ ...p })));
-    });
-  }
-
-  async selectDirectory(): Promise<void> {
-    this.isLoading.set(true);
-    const success = await this.photoService.selectDirectory();
-    if (success) {
-      // Load existing data first
-      await this.photoService.loadCategoriesFromDirectory();
-      await this.photoService.loadPhotosFromDirectory();
-      await this.photoService.loadLocationsFromDirectory();
-
-      const photos = await this.photoService.scanForImages();
-
-      if (photos.length > 0) {
-        this.editablePhotos.set(photos);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Directory Selected',
-          detail: `Found ${photos.length} images`,
-        });
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'No Images Found',
-          detail: 'The selected directory contains no supported images',
-        });
-      }
-    }
-    this.isLoading.set(false);
-  }
-
-  async saveToFile(): Promise<void> {
-    this.isLoading.set(true);
-    this.photoService.savePhotos(this.editablePhotos()).subscribe({
-      next: (success) => {
-        if (success) {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Saved',
-            detail: 'Photos saved to photos.json',
-          });
-        } else {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Warning',
-            detail: 'Please select a directory first',
-          });
-        }
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to save photos',
-        });
-        this.isLoading.set(false);
-      },
     });
   }
 
   clonedPhotos: { [s: string]: any } = {};
 
   onRowExpand(event: any): void {
-    const photo = event.data as Photo;
-    this.clonedPhotos[photo.id] = {
+    const photo = event.data as PhotoSummary;
+    this.clonedPhotos[photo.id!] = {
       ...photo,
       // location: { ...photo.location }, // Removed direct location access
       locationId: photo.locationId,
-      dateObj: new Date(photo.date),
-      categoryIds: [...photo.categoryIds],
+      dateObj: new Date(photo.takenOn!),
     };
   }
 
   onRowCollapse(event: any): void {
-    const photo = event.data as Photo;
-    delete this.clonedPhotos[photo.id];
+    const photo = event.data as PhotoSummary;
+    delete this.clonedPhotos[photo.id!];
   }
 
-  onRowEditSave(photo: Photo): void {
-    const clone = this.clonedPhotos[photo.id];
+  onRowEditSave(photo: PhotoSummary): void {
+    const clone = this.clonedPhotos[photo.id!];
     if (clone) {
-      const updatedPhoto: Photo = {
+      const updatedPhoto: PhotoSummary = {
         ...clone,
         date: clone.dateObj ? clone.dateObj.toISOString() : clone.date,
       };
@@ -190,30 +132,29 @@ export class Admin {
     }
   }
 
-  onRowEditCancel(photo: Photo): void {
+  onRowEditCancel(photo: PhotoSummary): void {
     const photos = this.editablePhotos();
     const original = photos.find((p) => p.id === photo.id);
     if (original) {
-      this.clonedPhotos[photo.id] = {
+      this.clonedPhotos[photo.id!] = {
         ...original,
         // location: { ...original.location }, // Removed direct location access
         locationId: original.locationId,
-        dateObj: new Date(original.date),
-        categoryIds: [...original.categoryIds],
+        dateObj: new Date(original.takenOn!),
       };
     }
   }
 
   // --- Map Selector ---
 
-  openMapSelector(photo: Photo): void {
+  openMapSelector(photo: PhotoSummary): void {
     // If we are in edit mode (expanded row), use the cloned/editing data
     // otherwise use the photo data.
-    const editingData = this.clonedPhotos[photo.id];
+    const editingData = this.clonedPhotos[photo.id!];
     const targetPhoto = editingData || photo;
 
     // Resolve location
-    let initialLoc: Location | undefined;
+    let initialLoc: LocationSummary | undefined;
     if (targetPhoto.locationId) {
       const loc = this.locations().find(l => l.id === targetPhoto.locationId);
       if (loc) {
@@ -221,19 +162,19 @@ export class Admin {
       }
     }
 
-    this.currentEditingPhotoId.set(photo.id);
+    this.currentEditingPhotoId.set(photo.id!);
     this.initialMapLocation.set(initialLoc);
     this.isMapSelectorVisible.set(true);
   }
 
-  onMapSave(event: { mode: 'create' | 'update'; location: Location }): void {
+  onMapSave(event: { mode: 'create' | 'update'; location: LocationSummary }): void {
     const { mode, location } = event;
     const photoId = this.currentEditingPhotoId();
 
     if (mode === 'create') {
       const currentLocs = this.locations();
       // Add new location to global list
-      this.photoService.saveLocations([...currentLocs, location]).subscribe(success => {
+      /*this.adminService.saveLocations([...currentLocs, location]).subscribe(success => {
         if (success) {
           this.messageService.add({ severity: 'success', summary: 'Location Created', detail: 'New location created' });
 
@@ -252,18 +193,19 @@ export class Admin {
             }
           }
         }
-      });
+      });*/
     } else if (mode === 'update') {
       // Update existing location
       const currentLocs = this.locations();
       const updatedLocs = currentLocs.map(l => l.id === location.id ? location : l);
 
-      this.photoService.saveLocations(updatedLocs).subscribe(success => {
+      /*
+      this.adminService.saveLocations(updatedLocs).subscribe(success => {
         if (success) {
           this.messageService.add({ severity: 'success', summary: 'Location Updated', detail: 'Shared location updated' });
           // Photo link remains same (locationId unchanged)
         }
-      });
+      });*/
     }
 
     this.isMapSelectorVisible.set(false);
@@ -285,13 +227,14 @@ export class Admin {
     const loc = this.locations().find(l => l.id === photo.locationId);
     if (!loc) return;
 
+    /*
     // Convert current (private?) location to Reusable
     if (loc.isReuseLocation) {
       this.messageService.add({ severity: 'info', summary: 'Already Reusable', detail: 'This location is already reusable.' });
       return;
-    }
+    }*/
 
-    if (!loc.name) {
+    if (!loc.locationName) {
       this.messageService.add({ severity: 'warn', summary: 'Missing Name', detail: 'Please enter a location name first' });
       return;
     }
@@ -300,7 +243,8 @@ export class Admin {
     const updatedLocation = { ...loc, isReuseLocation: true };
     const allLocations = this.locations().map(l => l.id === loc.id ? updatedLocation : l);
 
-    this.photoService.saveLocations(allLocations).subscribe(success => {
+    /*
+    this.adminService.saveLocations(allLocations).subscribe(success => {
       if (success) {
         this.messageService.add({
           severity: 'success',
@@ -311,7 +255,7 @@ export class Admin {
         // Update photo state if needed (it already refs the ID)
         photo.isReuseLocation = true; // This field on Photo might be redundant now? Yes.
       }
-    });
+    });*/
   }
 
   onReusableLocationSelect(photoId: string, locationId: string): void {
@@ -335,10 +279,11 @@ export class Admin {
 
     const newPhotos = currentPhotos.map(p => {
       if (selectedIds.includes(p.id)) {
+        /*
         // Add category if not present
         if (!p.categoryIds.includes(this.bulkCategory!)) {
           return { ...p, categoryIds: [...p.categoryIds, this.bulkCategory!] };
-        }
+        }*/
       }
       return p;
     });
@@ -385,7 +330,7 @@ export class Admin {
         if (p.locationId) {
           const locIndex = locations.findIndex(l => l.id === p.locationId);
           if (locIndex !== -1) {
-            locations[locIndex] = { ...locations[locIndex], name: this.bulkLocationName! };
+            locations[locIndex] = { ...locations[locIndex], locationName: this.bulkLocationName! };
             updatedAny = true;
           }
         }
@@ -395,7 +340,7 @@ export class Admin {
     });
 
     if (updatedAny) {
-      this.photoService.saveLocations(locations).subscribe();
+      // this.adminService.saveLocations(locations).subscribe();
     }
 
     this.editablePhotos.set(newPhotos);
@@ -412,7 +357,7 @@ export class Admin {
 
   // --- Helpers ---
 
-  private updatePhotoInList(updatedPhoto: Photo): void {
+  private updatePhotoInList(updatedPhoto: PhotoSummary): void {
     const photos = this.editablePhotos();
     const index = photos.findIndex((p) => p.id === updatedPhoto.id);
     if (index !== -1) {
@@ -424,10 +369,6 @@ export class Admin {
 
   getCategoryLabel(id: string): string {
     const cat = this.categories().find((c) => c.id === id);
-    return cat ? cat.label : id;
-  }
-
-  isFileSystemSupported(): boolean {
-    return this.photoService.isSupported();
+    return cat ? cat.categoryName! : id;
   }
 }

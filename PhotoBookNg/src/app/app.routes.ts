@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, Routes } from '@angular/router';
 import { TenantService } from './services/tenant.service';
+import { AdminActivate } from './services/admin-activate';
 
 const tenantGuard = (route: ActivatedRouteSnapshot) => {
   const tenantId = route.paramMap.get('tenantId');
@@ -11,6 +12,11 @@ const tenantGuard = (route: ActivatedRouteSnapshot) => {
 };
 
 export const routes: Routes = [
+  {
+    path: 'admin',
+    canActivate: [AdminActivate],
+    loadComponent: () => import('./components/admin/admin').then((m) => m.Admin),
+  },
   {
     path: ':tenantId',
     canActivate: [tenantGuard],
@@ -40,10 +46,6 @@ export const routes: Routes = [
         path: 'category/:id',
         loadComponent: () =>
           import('./components/category/category').then((m) => m.CategoryComponent),
-      },
-      {
-        path: 'admin',
-        loadComponent: () => import('./components/admin/admin').then((m) => m.Admin),
       },
       {
         path: '**',

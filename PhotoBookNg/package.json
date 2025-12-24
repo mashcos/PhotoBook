@@ -35,6 +35,7 @@
     "@microsoft/kiota-bundle": "^1.0.0-preview.99",
     "@microsoft/kiota-http-fetchlibrary": "^1.0.0-preview.99",
     "@primeuix/themes": "^2.0.1",
+    "angular-auth-oidc-client": "^21.0.1",
     "exif-js": "^2.3.0",
     "leaflet": "^1.9.4",
     "ngx-markdown": "^21.0.0",

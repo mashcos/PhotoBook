@@ -13,27 +13,6 @@
     Photo Admin
   </h1>
 
-  <!-- Toolbar -->
-  <div class="admin-toolbar">
-    @if (isFileSystemSupported()) {
-    <p-button label="Select Directory" icon="pi pi-folder-open" (onClick)="selectDirectory()"
-      [loading]="isLoading()"></p-button>
-    <div class="flex align-items-center gap-2">
-      <p-button label="Save to File" icon="pi pi-save" severity="success" (onClick)="saveToFile()"
-        [loading]="isLoading()"></p-button>
-      @if (hasUnsavedChanges()) {
-      <span class="text-orange-500 font-bold ml-2">Unsaved Changes</span>
-      }
-    </div>
-    } @else {
-    <div class="api-warning">
-      <i class="pi pi-exclamation-triangle"></i>
-      <span>File System Access API is not supported in this browser. Use Chrome or Edge for local file
-        management.</span>
-    </div>
-    }
-  </div>
-
   <!-- Bulk Actions Toolbar -->
   @if (selectedPhotos().length > 0) {
   <div class="bulk-toolbar fadein">
