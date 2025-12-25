@@ -15,6 +15,24 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [AdminActivate],
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () => import('./components/admin/admin').then((m) => m.Admin),
+      },
+      {
+        // TODO
+        path: 'login',
+        pathMatch: 'full',
+        loadComponent: () => import('./components/admin/admin').then((m) => m.Admin),
+      },
+    ]
+  },
+  {
+    // TODO
+    path: 'logout',
+    canActivate: [AdminActivate],
     loadComponent: () => import('./components/admin/admin').then((m) => m.Admin),
   },
   {

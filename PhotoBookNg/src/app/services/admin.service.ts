@@ -1,10 +1,20 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, of, shareReplay, catchError, from } from 'rxjs';
 import { createPhotoBookClient, PhotoBookClient } from '../client/photoBookClient';
-import { CategoryRequest, CategorySummary, CategoryViewModel, LocationRequest, LocationSummary, PhotoRequest, PhotoSummary, PhotoViewModel } from '../client/models';
+import {
+  CategoryRequest,
+  CategorySummary,
+  CategoryViewModel,
+  LocationRequest,
+  LocationSummary,
+  PhotoRequest,
+  PhotoSummary,
+  PhotoViewModel,
+} from '../client/models';
 import { TenantService } from './tenant.service';
-import { TenantAuthenticationProvider } from './tenant-auth-provider';
 import { FetchRequestAdapter } from '@microsoft/kiota-http-fetchlibrary';
+import { OidcSecurityService } from 'angular-auth-oidc-client';
+import { AdminAuthenticationProvider } from './admin-auth-provider';
 
 /**
  * PhotoService handles loading data via API
@@ -14,10 +24,11 @@ import { FetchRequestAdapter } from '@microsoft/kiota-http-fetchlibrary';
 })
 export class AdminService {
   protected tenantService = inject(TenantService);
-  private client : PhotoBookClient;
+  protected oidcSecurityService = inject(OidcSecurityService); // <--- Injecten
+  private client: PhotoBookClient;
 
   constructor() {
-    const authProvider = new TenantAuthenticationProvider(this.tenantService);
+    const authProvider = new AdminAuthenticationProvider(this.oidcSecurityService);
     const adapter = new FetchRequestAdapter(authProvider);
 
     // Use relative API base so the dev-server proxy forwards to backend
@@ -31,7 +42,7 @@ export class AdminService {
     const photos$ = from(this.client.api.photo.request.post(request)).pipe(
       map((photos) => photos ?? []),
       shareReplay(1),
-      catchError(() => of([]))
+      catchError(() => of([])),
     );
     return photos$;
   }
@@ -41,7 +52,7 @@ export class AdminService {
     const categories$ = from(this.client.api.category.request.post(request)).pipe(
       map((categories) => categories ?? []),
       shareReplay(1),
-      catchError(() => of([]))
+      catchError(() => of([])),
     );
     return categories$;
   }
@@ -51,7 +62,7 @@ export class AdminService {
     const locations$ = from(this.client.api.location.request.post(request)).pipe(
       map((locations) => locations ?? []),
       shareReplay(1),
-      catchError(() => of([]))
+      catchError(() => of([])),
     );
     return locations$;
   }
@@ -73,7 +84,7 @@ export class AdminService {
     const photos$ = from(this.client.api.photo.request.post(request)).pipe(
       map((photos) => photos ?? []),
       shareReplay(1),
-      catchError(() => of([]))
+      catchError(() => of([])),
     );
     return photos$;
   }

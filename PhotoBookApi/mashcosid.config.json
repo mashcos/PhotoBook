@@ -1,0 +1,89 @@
+{
+  "Clients": [
+    {
+      "Enabled": true,
+      "ClientId": "photobook",
+      "ProtocolType": "oidc",
+      "ClientSecrets": [
+      ],
+      "RequireClientSecret": false,
+      "ClientName": "PhotoBook App",
+      "Description": null,
+      "ClientUri": null,
+      "LogoUri": null,
+      "RequireConsent": false,
+      "AllowRememberConsent": true,
+      "AllowedGrantTypes": [
+        "authorization_code"
+      ],
+      "RequirePkce": true,
+      "AllowPlainTextPkce": false,
+      "RequireRequestObject": false,
+      "AllowAccessTokensViaBrowser": false,
+      "RequireDPoP": false,
+      "DPoPValidationMode": 1,
+      "DPoPClockSkew": "00:05:00",
+      "RedirectUris": [
+        "http://localhost:4200/admin/login"
+      ],
+      "PostLogoutRedirectUris": [
+        "http://localhost:4200/logout"
+      ],
+      "FrontChannelLogoutUri": null,
+      "FrontChannelLogoutSessionRequired": true,
+      "BackChannelLogoutUri": null,
+      "BackChannelLogoutSessionRequired": true,
+      "AllowOfflineAccess": true,
+      "AllowedScopes": [
+        "openid",
+        "profile",
+        "email",
+        "phone",
+        "address",
+        "tenant_id"
+      ],
+      "AlwaysIncludeUserClaimsInIdToken": false,
+      "IdentityTokenLifetime": 300,
+      "AllowedIdentityTokenSigningAlgorithms": [
+      ],
+      "AccessTokenLifetime": 3600,
+      "AuthorizationCodeLifetime": 300,
+      "AbsoluteRefreshTokenLifetime": 2592000,
+      "SlidingRefreshTokenLifetime": 1296000,
+      "ConsentLifetime": null,
+      "PushedAuthorizationLifetime": null,
+      "RequirePushedAuthorization": false,
+      "RefreshTokenUsage": 0,
+      "UpdateAccessTokenClaimsOnRefresh": false,
+      "RefreshTokenExpiration": 1,
+      "AccessTokenType": 0,
+      "EnableLocalLogin": true,
+      "IdentityProviderRestrictions": [
+      ],
+      "IncludeJwtId": true,
+      "Claims": [
+      ],
+      "AlwaysSendClientClaims": false,
+      "ClientClaimsPrefix": "client_",
+      "PairWiseSubjectSalt": null,
+      "UserSsoLifetime": null,
+      "UserCodeType": null,
+      "DeviceCodeLifetime": 300,
+      "CibaLifetime": null,
+      "PollingInterval": null,
+      "CoordinateLifetimeWithUserSession": null,
+      "AllowedCorsOrigins": [
+        "http://localhost:4200"
+      ],
+      "InitiateLoginUri": null,
+      "Properties": {
+      }
+    }
+  ],
+  "Roles": [
+    {
+      "Id": null,
+      "RoleName": "Default"
+    }
+  ]
+}

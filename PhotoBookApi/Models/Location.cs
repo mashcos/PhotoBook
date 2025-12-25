@@ -2,7 +2,7 @@
 
 namespace PhotoBookApi.Models
 {
-    public class Location : MultitenantMashcosEntity
+    public class Location : MultitenantMashcosEntity<Photobook>
     {
         public string? LocationName { get; set; }
         public string? Description { get; set; }

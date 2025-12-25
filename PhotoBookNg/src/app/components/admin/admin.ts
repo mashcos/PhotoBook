@@ -49,9 +49,6 @@ import { PhotoSummary, LocationSummary, CategorySummary } from '../../client/mod
   styleUrl: './admin.scss',
 })
 export class Admin {
-reusableLocations(): any[]|null|undefined {
-throw new Error('Method not implemented.');
-}
   private readonly adminService = inject(AdminService);
   private readonly messageService = inject(MessageService);
 
@@ -156,7 +153,7 @@ throw new Error('Method not implemented.');
     // Resolve location
     let initialLoc: LocationSummary | undefined;
     if (targetPhoto.locationId) {
-      const loc = this.locations().find(l => l.id === targetPhoto.locationId);
+      const loc = this.locations().find((l) => l.id === targetPhoto.locationId);
       if (loc) {
         initialLoc = loc;
       }
@@ -197,7 +194,7 @@ throw new Error('Method not implemented.');
     } else if (mode === 'update') {
       // Update existing location
       const currentLocs = this.locations();
-      const updatedLocs = currentLocs.map(l => l.id === location.id ? location : l);
+      const updatedLocs = currentLocs.map((l) => (l.id === location.id ? location : l));
 
       /*
       this.adminService.saveLocations(updatedLocs).subscribe(success => {
@@ -224,7 +221,7 @@ throw new Error('Method not implemented.');
 
     if (!photo.locationId) return;
 
-    const loc = this.locations().find(l => l.id === photo.locationId);
+    const loc = this.locations().find((l) => l.id === photo.locationId);
     if (!loc) return;
 
     /*
@@ -235,13 +232,17 @@ throw new Error('Method not implemented.');
     }*/
 
     if (!loc.locationName) {
-      this.messageService.add({ severity: 'warn', summary: 'Missing Name', detail: 'Please enter a location name first' });
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Missing Name',
+        detail: 'Please enter a location name first',
+      });
       return;
     }
 
     // Update to reusable
     const updatedLocation = { ...loc, isReuseLocation: true };
-    const allLocations = this.locations().map(l => l.id === loc.id ? updatedLocation : l);
+    const allLocations = this.locations().map((l) => (l.id === loc.id ? updatedLocation : l));
 
     /*
     this.adminService.saveLocations(allLocations).subscribe(success => {
@@ -259,7 +260,7 @@ throw new Error('Method not implemented.');
   }
 
   onReusableLocationSelect(photoId: string, locationId: string): void {
-    const location = this.locations().find(l => l.id === locationId);
+    const location = this.locations().find((l) => l.id === locationId);
     if (location && this.clonedPhotos[photoId]) {
       this.clonedPhotos[photoId].locationId = locationId;
       this.clonedPhotos[photoId].isReuseLocation = true;
@@ -275,9 +276,9 @@ throw new Error('Method not implemented.');
     if (!this.bulkCategory || this.selectedPhotos().length === 0) return;
 
     const currentPhotos = this.editablePhotos();
-    const selectedIds = this.selectedPhotos().map(p => p.id);
+    const selectedIds = this.selectedPhotos().map((p) => p.id);
 
-    const newPhotos = currentPhotos.map(p => {
+    const newPhotos = currentPhotos.map((p) => {
       if (selectedIds.includes(p.id)) {
         /*
         // Add category if not present
@@ -304,7 +305,7 @@ throw new Error('Method not implemented.');
     if (!this.bulkLocationName || this.selectedPhotos().length === 0) return;
 
     const currentPhotos = this.editablePhotos();
-    const selectedIds = this.selectedPhotos().map(p => p.id);
+    const selectedIds = this.selectedPhotos().map((p) => p.id);
 
     // 1. Create a new single location for ALL these photos?
     //    If we give them all the same name, they are logically the same place?
@@ -325,10 +326,10 @@ throw new Error('Method not implemented.');
     const locations = [...this.locations()];
     let updatedAny = false;
 
-    const newPhotos = currentPhotos.map(p => {
+    const newPhotos = currentPhotos.map((p) => {
       if (selectedIds.includes(p.id)) {
         if (p.locationId) {
-          const locIndex = locations.findIndex(l => l.id === p.locationId);
+          const locIndex = locations.findIndex((l) => l.id === p.locationId);
           if (locIndex !== -1) {
             locations[locIndex] = { ...locations[locIndex], locationName: this.bulkLocationName! };
             updatedAny = true;
@@ -370,5 +371,9 @@ throw new Error('Method not implemented.');
   getCategoryLabel(id: string): string {
     const cat = this.categories().find((c) => c.id === id);
     return cat ? cat.categoryName! : id;
+  }
+  
+  reusableLocations(): any[] | null | undefined {
+    throw new Error('Method not implemented.');
   }
 }

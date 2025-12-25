@@ -2,7 +2,7 @@
 
 namespace PhotoBookApi.Models
 {
-    public class Category : MultitenantMashcosEntity
+    public class Category : MultitenantMashcosEntity<Photobook>
     {
         public string? CategoryName { get; set; }
         public string? Description { get; set; }

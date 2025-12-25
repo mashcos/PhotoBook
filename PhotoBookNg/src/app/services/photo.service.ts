@@ -1,4 +1,4 @@
-import { Injectable, Inject, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, map, of, shareReplay, catchError, from } from 'rxjs';
 import { createPhotoBookClient, PhotoBookClient } from '../client/photoBookClient';
 import { CategoryRequest, CategorySummary, CategoryViewModel, LocationRequest, LocationSummary, PhotoRequest, PhotoSummary, PhotoViewModel } from '../client/models';
