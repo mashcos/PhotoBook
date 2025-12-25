@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PhotoBookApi.Data;
 using PhotoBookApi.Models;
-using System.Security.Claims;
 using System.Text.Json;
 
 namespace PhotoBookApi.ImportExport;
@@ -76,8 +75,10 @@ public class LocalDataService
 
     public async Task ImportAssetsAsync(string folderName, PhotoBookContext context)
     {
-        var userId = Guid.NewGuid();
-        var tenantId = Guid.NewGuid();
+        var photobook = context.Photobooks.FirstOrDefault();
+
+        var tenantId = photobook == null ? Guid.NewGuid() : photobook.Id;
+        var userId = photobook == null ? Guid.NewGuid() : photobook.OwnerId;
 
         var importedCategories = await ImportCategoriesAsync(Path.Combine(folderName, "categories.json"));
         var importedLocations = await ImportLocationsAsync(Path.Combine(folderName, "locations.json"));
@@ -207,6 +208,7 @@ public class LocalDataService
             {
                 context.Database.Migrate();
             }
+
             var baseDirectory = Directory.GetParent(Directory.GetCurrentDirectory())!.FullName;
             var directory = Path.Combine(baseDirectory, "PhotoBookNg", "src", "assets", "local");
             var task = new LocalDataService().ImportAssetsAsync(directory, context);

@@ -42,10 +42,10 @@
               <i class="pi pi-calendar"></i>
               {{ formatDate(photo.takenOn!) }}
             </span>
-            @if (photo | locationSummaryName:locations()) {
+            @if (photo | locationName:locations()) {
             <span class="location">
               <i class="pi pi-map-marker"></i>
-              {{ photo | locationSummaryName:locations() }}
+              {{ photo | locationName:locations() }}
             </span>
             }
           </div>

@@ -5,7 +5,6 @@ import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import { latLng, tileLayer, MapOptions, marker, Marker, icon, Icon } from 'leaflet';
 import { PhotoService } from '../../services/photo.service';
 import { TenantService } from '../../services/tenant.service';
-import { Photo, Location } from '../../models/models';
 import { LocationSummary, PhotoSummary } from '../../client/models';
 
 // Fix for default marker icons in Leaflet

@@ -14,8 +14,8 @@ import {
     LeafletMouseEvent,
     Icon,
 } from 'leaflet';
-import { Location } from '../../../models/models';
 import { ButtonModule } from 'primeng/button';
+import { LocationSummary } from '../../../client/models';
 
 // Fix for default marker icons in Leaflet
 Icon.Default.mergeOptions({
@@ -32,16 +32,16 @@ Icon.Default.mergeOptions({
     styleUrl: './map-selector.scss',
 })
 export class MapSelectorComponent {
-    @Input() set initialLocation(loc: Location | undefined) {
+    @Input() set initialLocation(loc: LocationSummary | undefined) {
         if (loc) {
-            if (loc.lat && loc.lng) {
-                this.currentCenter = latLng(loc.lat, loc.lng);
+            if (loc.latitude && loc.longitude) {
+                this.currentCenter = latLng(loc.latitude, loc.longitude);
                 this.currentZoom = 13;
-                this.updateMarker(loc.lat, loc.lng);
+                this.updateMarker(loc.latitude, loc.longitude);
             }
-            this.locationName.set(loc.name || '');
-            this.isReuseLocation.set(loc.isReuseLocation || false);
-            this.originalLocationId = loc.id;
+            this.locationName.set(loc.locationName || '');
+            // TODO this.isReuseLocation.set(loc.isReuseLocation || false);
+            this.originalLocationId = loc.id ?? undefined;
         } else {
             // Default to Germany center if no location
             this.currentCenter = latLng(51.1657, 10.4515);
@@ -53,7 +53,7 @@ export class MapSelectorComponent {
         }
     }
 
-    @Output() save = new EventEmitter<{ mode: 'create' | 'update'; location: Location }>();
+    @Output() save = new EventEmitter<{ mode: 'create' | 'update'; location: LocationSummary }>();
     @Output() cancel = new EventEmitter<void>();
 
     // Form State
@@ -113,12 +113,12 @@ export class MapSelectorComponent {
             // Should we block if name is empty? Maybe for reusable locations?
             // For now allowing empty names as per previous behavior, but usually name is desired.
 
-            const location: Location = {
+            const location: LocationSummary = {
                 id: mode === 'update' && this.originalLocationId ? this.originalLocationId : crypto.randomUUID(),
-                name: this.locationName(),
-                lat,
-                lng,
-                isReuseLocation: this.isReuseLocation(),
+                locationName: this.locationName(),
+                latitude: lat,
+                longitude: lng,
+                // TODO isReuseLocation: this.isReuseLocation(),
             };
 
             this.save.emit({ mode, location });

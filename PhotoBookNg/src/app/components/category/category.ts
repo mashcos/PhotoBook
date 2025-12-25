@@ -7,12 +7,12 @@ import { TagModule } from 'primeng/tag';
 import { PhotoService } from '../../services/photo.service';
 import { TenantService } from '../../services/tenant.service';
 import { CategorySummary, LocationSummary, PhotoSummary } from '../../client/models';
-import { LocationSummaryNamePipe } from '../../pipes/location-name.pipe';
+import { LocationNamePipe } from '../../pipes/location-name.pipe';
 import { ImageSourcePipe } from '../../pipes/image-source.pipe';
 
 @Component({
   selector: 'app-category',
-  imports: [RouterLink, ButtonModule, TagModule, LocationSummaryNamePipe, ImageSourcePipe],
+  imports: [RouterLink, ButtonModule, TagModule, LocationNamePipe, ImageSourcePipe],
   templateUrl: './category.html',
   styleUrl: './category.scss',
 })
