@@ -19,7 +19,7 @@ public class LocalDataService
         };
     }
 
-    public async Task<List<CategoryImportModel>> ImportCategoriesAsync(string filePath)
+    public List<CategoryImportModel> ImportCategories(string filePath)
     {
         if (!File.Exists(filePath))
         {
@@ -27,7 +27,7 @@ public class LocalDataService
         }
 
         using var stream = File.OpenRead(filePath);
-        var result = await JsonSerializer.DeserializeAsync<List<CategoryImportModel>>(stream, _options);
+        var result = JsonSerializer.Deserialize<List<CategoryImportModel>>(stream, _options);
         return result ?? new List<CategoryImportModel>();
     }
 
@@ -37,7 +37,7 @@ public class LocalDataService
         await JsonSerializer.SerializeAsync(stream, categories, _options);
     }
 
-    public async Task<List<LocationImportModel>> ImportLocationsAsync(string filePath)
+    public List<LocationImportModel> ImportLocations(string filePath)
     {
         if (!File.Exists(filePath))
         {
@@ -45,7 +45,7 @@ public class LocalDataService
         }
 
         using var stream = File.OpenRead(filePath);
-        var result = await JsonSerializer.DeserializeAsync<List<LocationImportModel>>(stream, _options);
+        var result = JsonSerializer.Deserialize<List<LocationImportModel>>(stream, _options);
         return result ?? new List<LocationImportModel>();
     }
 
@@ -55,7 +55,7 @@ public class LocalDataService
         await JsonSerializer.SerializeAsync(stream, locations, _options);
     }
 
-    public async Task<List<PhotoImportModel>> ImportPhotosAsync(string filePath)
+    public List<PhotoImportModel> ImportPhotos(string filePath)
     {
         if (!File.Exists(filePath))
         {
@@ -63,7 +63,7 @@ public class LocalDataService
         }
 
         using var stream = File.OpenRead(filePath);
-        var result = await JsonSerializer.DeserializeAsync<List<PhotoImportModel>>(stream, _options);
+        var result = JsonSerializer.Deserialize<List<PhotoImportModel>>(stream, _options);
         return result ?? new List<PhotoImportModel>();
     }
 
@@ -73,22 +73,24 @@ public class LocalDataService
         await JsonSerializer.SerializeAsync(stream, photos, _options);
     }
 
-    public async Task ImportAssetsAsync(string folderName, PhotoBookContext context)
+    public void ImportAssets(string folderName, PhotoBookContext context)
     {
         var photobook = context.Photobooks.FirstOrDefault();
 
         var tenantId = photobook == null ? Guid.NewGuid() : photobook.Id;
         var userId = photobook == null ? Guid.NewGuid() : photobook.OwnerId;
 
-        var importedCategories = await ImportCategoriesAsync(Path.Combine(folderName, "categories.json"));
-        var importedLocations = await ImportLocationsAsync(Path.Combine(folderName, "locations.json"));
-        var importedPhotos = await ImportPhotosAsync(Path.Combine(folderName, "photos.json"));
-
+        var importedCategories = ImportCategories(Path.Combine(folderName, "categories.json"));
         List<Category> categories = ImportCategoriesToDatabase(context, userId, tenantId, importedCategories);
-        List<Location> locations = ImportLocationsToDatabase(context, userId, tenantId, importedLocations);
-        List<Photo> photos = ImportPhotosToDatabase(context, userId, tenantId, importedPhotos, categories, locations);
+        context.SaveChanges();
 
-        await context.SaveChangesAsync();
+        var importedLocations = ImportLocations(Path.Combine(folderName, "locations.json"));
+        List<Location> locations = ImportLocationsToDatabase(context, userId, tenantId, importedLocations);
+        context.SaveChanges();
+
+        var importedPhotos = ImportPhotos(Path.Combine(folderName, "photos.json"));
+        List<Photo> photos = ImportPhotosToDatabase(context, userId, tenantId, importedPhotos, categories, locations);
+        context.SaveChanges();
     }
 
     private static List<Category> ImportCategoriesToDatabase(
@@ -171,7 +173,7 @@ public class LocalDataService
             {
                 TenantId = tenantId,
                 Id = Guid.Parse(p.Id),
-                TakenOn = p.Date != null ? DateTime.Parse(p.Date) : null,
+                TakenOn = p.Date != null ? DateTime.Parse(p.Date).ToUniversalTime() : null,
                 Title = p.Title,
                 Description = p.Description,
                 LocationId = locationId,
@@ -211,8 +213,7 @@ public class LocalDataService
 
             var baseDirectory = Directory.GetParent(Directory.GetCurrentDirectory())!.FullName;
             var directory = Path.Combine(baseDirectory, "PhotoBookNg", "src", "assets", "local");
-            var task = new LocalDataService().ImportAssetsAsync(directory, context);
-            task.Wait();
+            new LocalDataService().ImportAssets(directory, context);
         }
     }
 }

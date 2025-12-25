@@ -17,13 +17,14 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
 
-import { MapSelectorComponent } from './map-selector/map-selector.component';
-import { LocationNamePipe } from '../../pipes/location-name.pipe';
-import { AdminService } from '../../services/admin.service';
-import { PhotoSummary, LocationSummary, CategorySummary } from '../../client/models';
+import { MapSelectorComponent } from '../map-selector/map-selector.component';
+import { LocationNamePipe } from '../../../pipes/location-name.pipe';
+import { AdminService } from '../../../services/admin.service';
+import { PhotoSummary, LocationSummary, CategorySummary } from '../../../client/models';
+import { ImageSourcePipe } from "../../../pipes/image-source.pipe";
 
 @Component({
-  selector: 'app-admin',
+  selector: 'app-admin-index',
   standalone: true,
   imports: [
     FormsModule,
@@ -43,12 +44,13 @@ import { PhotoSummary, LocationSummary, CategorySummary } from '../../client/mod
     SelectModule,
     MapSelectorComponent,
     LocationNamePipe,
-  ],
+    ImageSourcePipe
+],
   providers: [MessageService],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
 })
-export class Admin {
+export class AdminIndexComponent {
   private readonly adminService = inject(AdminService);
   private readonly messageService = inject(MessageService);
 
@@ -374,6 +376,6 @@ export class Admin {
   }
   
   reusableLocations(): any[] | null | undefined {
-    throw new Error('Method not implemented.');
+    return []; // TODO
   }
 }

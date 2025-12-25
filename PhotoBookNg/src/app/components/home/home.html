@@ -21,7 +21,7 @@
           <h3>Timeline</h3>
           <p>Browse photos chronologically</p>
           <ng-template pTemplate="footer">
-            <p-button label="Explore" [routerLink]="['/', tenantService.currentTenant(), 'timeline']" [outlined]="true" class="w-full"></p-button>
+            <p-button label="Explore" [routerLink]="['/pb', tenantService.currentTenant(), 'timeline']" [outlined]="true" class="w-full"></p-button>
           </ng-template>
         </p-card>
       </div>
@@ -36,7 +36,7 @@
           <h3>Map</h3>
           <p>Discover photo locations</p>
           <ng-template pTemplate="footer">
-            <p-button label="Explore" [routerLink]="['/', tenantService.currentTenant(), 'map']" [outlined]="true" class="w-full"></p-button>
+            <p-button label="Explore" [routerLink]="['/pb', tenantService.currentTenant(), 'map']" [outlined]="true" class="w-full"></p-button>
           </ng-template>
         </p-card>
       </div>
@@ -51,7 +51,7 @@
           <h3>Categories</h3>
           <p>Browse by topic</p>
           <ng-template pTemplate="footer">
-            <p-button label="Explore" [routerLink]="['/', tenantService.currentTenant(), 'category', 'cat-landscape']" [outlined]="true" class="w-full"></p-button>
+            <p-button label="Explore" [routerLink]="['/pb', tenantService.currentTenant(), 'category', 'cat-landscape']" [outlined]="true" class="w-full"></p-button>
           </ng-template>
         </p-card>
       </div>

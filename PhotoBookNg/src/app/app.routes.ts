@@ -7,8 +7,9 @@ const tenantGuard = (route: ActivatedRouteSnapshot) => {
   const tenantId = route.paramMap.get('tenantId');
   if (tenantId && tenantId.length > 16) {
     inject(TenantService).setTenant(tenantId);
+    return true;
   }
-  return true;
+  return false;
 };
 
 export const routes: Routes = [
@@ -19,24 +20,37 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./components/admin/admin').then((m) => m.Admin),
+        loadComponent: () => import('./components/admin/index/admin').then((m) => m.AdminIndexComponent),
       },
       {
         // TODO
         path: 'login',
         pathMatch: 'full',
-        loadComponent: () => import('./components/admin/admin').then((m) => m.Admin),
+        loadComponent: () => import('./components/admin/index/admin').then((m) => m.AdminIndexComponent),
       },
+      {
+        path: 'photo/index',
+        loadComponent: () => import('./components/admin/photo/index/index').then((m) => m.AdminPhotoIndexComponent),
+      },
+      {
+        path: 'photo/detail/:id',
+        loadComponent: () => import('./components/admin/photo/detail/detail').then((m) => m.AdminPhotoDetailComponent),
+      },
+      {
+        path: 'category/:id',
+        loadComponent: () =>
+          import('./components/category/category').then((m) => m.CategoryComponent),
+      }
     ]
   },
   {
     // TODO
     path: 'logout',
     canActivate: [AdminActivate],
-    loadComponent: () => import('./components/admin/admin').then((m) => m.Admin),
+    loadComponent: () => import('./components/admin/index/admin').then((m) => m.AdminIndexComponent),
   },
   {
-    path: ':tenantId',
+    path: 'pb/:tenantId',
     canActivate: [tenantGuard],
     children: [
       {
@@ -64,11 +78,7 @@ export const routes: Routes = [
         path: 'category/:id',
         loadComponent: () =>
           import('./components/category/category').then((m) => m.CategoryComponent),
-      },
-      {
-        path: '**',
-        redirectTo: '',
-      },
+      }
     ],
   },
   {

@@ -59,7 +59,7 @@ export class MapComponent implements OnInit, OnDestroy {
       const photoId = event.detail;
       // Validate photoId is a safe string before navigating
       if (typeof photoId === 'string' && /^[\w-]+$/.test(photoId)) {
-        this.router.navigate(['/', this.tenantService.currentTenant(), 'photo', photoId]);
+        this.router.navigate(['/pb', this.tenantService.currentTenant(), 'photo', photoId]);
       }
     }) as EventListener;
     window.addEventListener('navigateToPhoto', this.navigationHandler);

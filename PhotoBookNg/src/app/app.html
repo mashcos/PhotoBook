@@ -2,20 +2,20 @@
   <!-- Header -->
   <header class="header">
     <div class="header-content">
-      <a [routerLink]="['/', tenantService.currentTenant()]" class="logo">
+      <a [routerLink]="['/pb', tenantService.currentTenant()]" class="logo">
         <i class="pi pi-book"></i>
         <span>{{ title() }}</span>
       </a>
       <nav class="nav-links">
-        <a [routerLink]="['/', tenantService.currentTenant(), 'home']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <a [routerLink]="['/pb', tenantService.currentTenant(), 'home']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
           <i class="pi pi-home"></i>
           <span>Home</span>
         </a>
-        <a [routerLink]="['/', tenantService.currentTenant(), 'timeline']" routerLinkActive="active">
+        <a [routerLink]="['/pb', tenantService.currentTenant(), 'timeline']" routerLinkActive="active">
           <i class="pi pi-clock"></i>
           <span>Timeline</span>
         </a>
-        <a [routerLink]="['/', tenantService.currentTenant(), 'map']" routerLinkActive="active">
+        <a [routerLink]="['/pb', tenantService.currentTenant(), 'map']" routerLinkActive="active">
           <i class="pi pi-map"></i>
           <span>Map</span>
         </a>
